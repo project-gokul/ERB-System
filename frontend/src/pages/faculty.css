@@ -1,0 +1,215 @@
+/* ================= PAGE ================= */
+.faculty-page {
+  padding: 20px;
+  background: #12161c;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.faculty-page h1 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+/* ================= FORM ================= */
+.faculty-form {
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.faculty-form input,
+.faculty-form select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.faculty-form input:focus,
+.faculty-form select:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.faculty-form button {
+  grid-column: span 2;
+  padding: 10px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.faculty-form button:hover {
+  background: #2980b9;
+}
+
+/* ================= BUTTON GROUP ================= */
+.export-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.export-buttons button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  background: #2ecc71;
+  color: white;
+}
+
+.export-buttons button:hover {
+  background: #27ae60;
+}
+
+.export-buttons button:nth-child(2) {
+  background: #e67e22;
+}
+
+.export-buttons button:nth-child(2):hover {
+  background: #d35400;
+}
+
+/* ================= TABLE ================= */
+.faculty-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #242424;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.faculty-table thead {
+  background: #34495e;
+  color: white;
+}
+
+.faculty-table th,
+.faculty-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.faculty-table tbody tr:hover {
+  background: #454648;
+}
+
+/* ================= INLINE EDIT ================= */
+.faculty-table input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #3498db;
+  border-radius: 4px;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.delete-btn {
+  padding: 6px 10px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+}
+
+/* ================= EMPTY STATE ================= */
+.faculty-table td[colspan] {
+  padding: 20px;
+  color: #100909;
+}
+
+/* ================= RESPONSIVE ================= */
+/* ================= RESPONSIVE ================= */
+
+/* ----------- Tablets (≤ 1024px) ----------- */
+@media (max-width: 1024px) {
+  .faculty-form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .faculty-table th,
+  .faculty-table td {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  .export-buttons {
+    justify-content: flex-start;
+  }
+}
+
+/* ----------- Tablets & Large Mobiles (≤ 768px) ----------- */
+@media (max-width: 768px) {
+  .faculty-page {
+    padding: 15px;
+  }
+
+  .faculty-form {
+    grid-template-columns: 1fr;
+  }
+
+  .faculty-form button {
+    grid-column: span 1;
+  }
+
+  .export-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .export-buttons button {
+    width: 100%;
+  }
+
+  .faculty-table {
+    font-size: 13px;
+  }
+}
+
+/* ----------- Small Mobiles (≤ 480px) ----------- */
+@media (max-width: 480px) {
+  .faculty-page h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .faculty-form input,
+  .faculty-form select {
+    font-size: 13px;
+    padding: 7px;
+  }
+
+  .faculty-form button {
+    font-size: 14px;
+    padding: 9px;
+  }
+
+  .faculty-table th,
+  .faculty-table td {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .delete-btn {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}

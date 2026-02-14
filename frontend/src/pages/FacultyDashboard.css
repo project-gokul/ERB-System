@@ -1,0 +1,229 @@
+.faculty-layout {
+  display:flex;
+  width: 18%;
+  min-height: 100vh;
+  background: #121212;
+  color: white;
+}
+/* ================= SUBJECT GRID ================= */
+.subject-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 15px;
+  padding: 0;
+  list-style: none;
+}
+.subject-item {
+  background: #242424;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.subject-item strong {
+  font-size: 16px;
+  color: #ffffff;
+}
+.subject-item input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1b1b1b;
+  color: #fff;
+}
+.action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+.subject-item .add-link-btn {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.subject-item .delete-btn {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 240px;               /* 🔥 FIXED WIDTH */
+  background: #111;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+}
+
+.logo {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.menu-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: white;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.menu-item:hover,
+.menu-item.active {
+  background: #4caf50;
+}
+
+.logout-btn {
+  margin-top: auto;
+  padding: 10px;
+  background: #e53935;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ===== CONTENT ===== */
+.content {
+  flex: 1;
+  padding: 30px;
+}
+
+.info-card {
+  background: #1f1f1f;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  margin-bottom: 20px;
+}
+
+.student-btn {
+  padding: 12px 18px;
+  background: #2196f3;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+/* ================= INPUT SECTION ================= */
+.subject-input {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.subject-input input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #2b2b2b;
+  color: #fff;
+}
+
+.subject-input input::placeholder {
+  color: #aaa;
+}
+
+.subject-input button {
+  background: #6a5acd;
+  border: none;
+  padding: 8px 14px;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.subject-input button:hover {
+  background: #5a4bb7;
+}
+.subject-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.subject-item,
+.subject-list li {
+  background: #2a2a2a;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* subject name */
+.subject-list strong {
+  color: #fff;
+  font-size: 15px;
+}
+
+/* ================= LINK INPUT ================= */
+.subject-list input {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1f1f1f;
+  color: #fff;
+}
+
+/* ================= BUTTON ROW ================= */
+.subject-list button {
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Add link */
+.subject-list button:first-of-type {
+  background: #3cb371;
+  color: white;
+}
+
+.subject-list button:first-of-type:hover {
+  background: #2fa866;
+}
+
+/* Delete button */
+.delete-btn {
+  background: #ff4d4d !important;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #e63939 !important;
+}
+
+/* ================= VIEW MATERIAL BUTTON ================= */
+.student-btn {
+  margin-top: 15px;
+  background: #1e90ff;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.student-btn:hover {
+  background: #187bdb;
+}

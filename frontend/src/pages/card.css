@@ -1,0 +1,29 @@
+.card-grid {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.count-card {
+  flex: 1;
+  background: #1e1e1e;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.count-card h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.count-card p {
+  font-size: 36px;
+  font-weight: bold;
+  color: #4caf50;
+}
+
+.count-card.students p {
+  color: #2196f3;
+}

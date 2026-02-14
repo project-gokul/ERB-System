@@ -1,0 +1,355 @@
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* ================= PAGE CONTAINER ================= */
+.login-container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;        /* vertical center */
+  justify-content: center;    /* horizontal center */
+  background: radial-gradient(circle at top, #1a1a1a, #0b0b0b);
+  padding: 20px;
+}
+
+/* ================= LOGIN CARD ================= */
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(18, 18, 18, 0.96);
+  padding: 32px;
+  border-radius: 16px;
+  color: #fff;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+
+  animation: slideFade 0.7s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ================= HOVER EFFECT ================= */
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 28px 65px rgba(0, 0, 0, 0.9),
+    0 0 28px rgba(76, 175, 80, 0.18);
+}
+
+/* ================= TITLE ================= */
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 18px;
+  font-size: 24px;
+}
+
+/* ================= ERROR ================= */
+.error-box {
+  margin-bottom: 14px;
+  padding: 10px;
+  background: #2a0000;
+  color: #ff6b6b;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+/* ================= LABEL ================= */
+.login-card label {
+  font-size: 13px;
+  color: #ccc;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ================= INPUT ================= */
+.login-card input {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 16px;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-card input::placeholder {
+  color: #777;
+}
+
+.login-card input:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+}
+
+/* ================= BUTTON ================= */
+.login-card button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  background: linear-gradient(135deg, #4caf50, #43a047);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-card button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.45);
+}
+
+.login-card button:active {
+  transform: scale(0.97);
+}
+
+/* ================= LINKS ================= */
+.login-card p {
+  margin-top: 10px;
+  font-size: 13px;
+  text-align: center;
+  color: #ccc;
+}
+
+.login-card a {
+  color: #4da3ff;
+  text-decoration: none;
+}
+
+.login-card a:hover {
+  text-decoration: underline;
+}
+
+/* ================= ANIMATION ================= */
+@keyframes slideFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 22px;
+  }
+
+  .login-card h2 {
+    font-size: 20px;
+  }
+}
+/* ================= AUTH PAGE CONTAINER ================= */
+
+   
+/* =====================================================
+   AUTH CARD
+===================================================== */
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+ min-height: 300px;
+  margin-left: 40%;
+  margin-top: 20%;
+  border-radius: 16px;
+  color: #fff;
+  align-items: center;
+  position: fixed;
+  padding: 32px;
+  background: radial-gradient(circle at top, #1a1a1a, #0b0b0b);
+  
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+
+  animation: slideFade 0.7s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover lift */
+.auth-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 25px 60px rgba(0, 0, 0, 0.9),
+    0 0 26px rgba(76, 175, 80, 0.18);
+}
+
+/* =====================================================
+   TITLES
+===================================================== */
+.auth-card h2 {
+  text-align: center;
+  margin-bottom: 18px;
+  font-size: 24px;
+}
+
+/* Optional subtitle */
+.auth-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 22px;
+}
+
+/* =====================================================
+   LABELS
+===================================================== */
+.auth-card label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #ccc;
+}
+
+/* =====================================================
+   INPUTS
+===================================================== */
+.auth-card input {
+  width: 100%;
+  padding: 11px;
+  margin-bottom: 16px;
+  background: #141414;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-card input::placeholder {
+  color: #777;
+}
+
+.auth-card input:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.25);
+}
+
+/* =====================================================
+   BUTTON
+===================================================== */
+.auth-card button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #4caf50, #43a047);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-card button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(76, 175, 80, 0.45);
+}
+
+.auth-card button:active {
+  transform: scale(0.97);
+}
+
+/* =====================================================
+   FORGOT PASSWORD
+===================================================== */
+.forgot-password {
+  text-align: right;
+  margin: 8px 0 14px;
+}
+
+.forgot-password a {
+  font-size: 13px;
+  color: #4da3ff;
+  text-decoration: none;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+
+/* =====================================================
+   ERROR & MESSAGE
+===================================================== */
+.auth-error {
+  margin-bottom: 14px;
+  padding: 10px;
+  background: #2a0000;
+  color: #ff6b6b;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.auth-message {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #9ccc65;
+}
+
+/* =====================================================
+   LINKS
+===================================================== */
+.auth-link {
+  display: block;
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #4da3ff;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* =====================================================
+   ANIMATION
+===================================================== */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 22px;
+    border-radius: 14px;
+  }
+
+  .auth-card h2 {
+    font-size: 20px;
+  }
+
+  .auth-card button {
+    font-size: 14px;
+  }
+}

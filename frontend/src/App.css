@@ -1,0 +1,43 @@
+
+
+/* ================= DASHBOARD WRAPPER ================= */
+/* Use this ONLY inside dashboard pages */
+.dashboard-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* ================= LOGO (OPTIONAL) ================= */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms ease;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+/* ================= CARDS ================= */
+.card {
+  padding: 2em;
+}
+
+/* ================= TEXT ================= */
+.read-the-docs {
+  color: #888;
+}
+
+/* ================= DASHBOARD FIX ================= */
+.Dashboard {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

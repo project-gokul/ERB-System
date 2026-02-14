@@ -1,0 +1,124 @@
+/* ===== PAGE ===== */
+.student-page {
+  min-height: 100vh;
+  background: #121212;
+  color: #ffffff;
+  padding: 40px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===== TITLE ===== */
+.student-page h1 {
+  margin-bottom: 25px;
+  font-size: 28px;
+}
+
+/* ===== FORM ===== */
+.student-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.student-form input {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background: #2a2a2a;
+  color: #ffffff;
+}
+
+.student-form input::placeholder {
+  color: #aaaaaa;
+}
+
+/* ===== ADD BUTTON ===== */
+.student-form button {
+  grid-column: span 2;
+  padding: 12px;
+  background: #4caf50;
+  color: #000;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.student-form button:hover {
+  background: #43a047;
+}
+
+/* ===== TABLE ===== */
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #1e1e1e;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.student-table th,
+.student-table td {
+  padding: 12px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.student-table th {
+  background: #2a2a2a;
+  font-weight: bold;
+}
+
+.student-table tr:nth-child(even) {
+  background: #242424;
+}
+
+/* ===== ACTION BUTTON ===== */
+.student-table button {
+  padding: 6px 12px;
+  background: #ff4d4d;
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.student-table button:hover {
+  background: #e53935;
+}
+
+/* ===== EMPTY STATE ===== */
+.student-table td[colspan] {
+  text-align: center;
+  color: #bbbbbb;
+}
+
+/* ===== LOADING TEXT ===== */
+.student-page p {
+  color: #bbbbbb;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
+  .student-form {
+    grid-template-columns: 1fr;
+  }
+
+  .student-form button {
+    grid-column: span 1;
+  }
+
+  .student-table {
+    font-size: 14px;
+    display: block;
+    overflow-x: auto;
+  }
+}
