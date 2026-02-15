@@ -1,4 +1,4 @@
-const axios = require("axios");
+import axios from "axios";
 
 /**
  * Fetch data from ANY Google Sheet safely
@@ -31,7 +31,6 @@ const fetchSheetData = async (sheetId, sheetName = "Form responses 1") => {
     row.c.forEach((cell, index) => {
       const key = headers[index];
       const value = cell?.v?.toString().trim() || "";
-
       const lower = key.toLowerCase();
 
       if (lower.includes("name")) student.name = value;
@@ -51,4 +50,4 @@ const fetchSheetData = async (sheetId, sheetName = "Form responses 1") => {
   );
 };
 
-module.exports = fetchSheetData;
+export default fetchSheetData;
