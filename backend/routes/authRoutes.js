@@ -219,4 +219,4 @@ router.get("/dashboard", authMiddleware, (req, res) => {
   });
 });
 
-module.exports = router; 
+export default router; 
