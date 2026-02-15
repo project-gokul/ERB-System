@@ -11,7 +11,7 @@ import sendMail from "../utils/mailer.js";
 const router = express.Router();
 
 /* =====================================================
-   REGISTER API
+   REGISTER
 ===================================================== */
 router.post("/register", async (req, res) => {
   try {
@@ -28,15 +28,13 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new User({
+    await User.create({
       name,
       email,
       password: hashedPassword,
       department,
       role,
     });
-
-    await newUser.save();
 
     res.status(201).json({
       message: `${role} registered successfully ✅`,
@@ -48,14 +46,16 @@ router.post("/register", async (req, res) => {
 });
 
 /* =====================================================
-   LOGIN API
+   LOGIN
 ===================================================== */
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
@@ -97,12 +97,13 @@ router.post("/login", async (req, res) => {
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
-
-    let account = await User.findOne({ email });
-    if (!account) {
-      account = await Student.findOne({ email });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
     }
+
+    let account =
+      (await User.findOne({ email })) ||
+      (await Student.findOne({ email }));
 
     if (!account) {
       return res.status(404).json({ message: "User not found" });
@@ -111,7 +112,7 @@ router.post("/forgot-password", async (req, res) => {
     const token = crypto.randomBytes(32).toString("hex");
 
     account.resetToken = token;
-    account.resetTokenExpiry = Date.now() + 10 * 60 * 1000;
+    account.resetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 min
     await account.save();
 
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
@@ -131,58 +132,68 @@ router.post("/reset-password/:token", async (req, res) => {
   try {
     const { password } = req.body;
 
-    const user = await User.findOne({
-      resetToken: req.params.token,
-      resetTokenExpiry: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
     }
 
-    user.password = await bcrypt.hash(password, 10);
-    user.resetToken = null;
-    user.resetTokenExpiry = null;
-    await user.save();
+    let account =
+      (await User.findOne({
+        resetToken: req.params.token,
+        resetTokenExpiry: { $gt: Date.now() },
+      })) ||
+      (await Student.findOne({
+        resetToken: req.params.token,
+        resetTokenExpiry: { $gt: Date.now() },
+      }));
 
-    res.status(200).json({ message: "Password reset successful ✅" });
+    if (!account) {
+      return res.status(400).json({
+        message: "Invalid or expired token",
+      });
+    }
+
+    account.password = await bcrypt.hash(password, 10);
+    account.resetToken = null;
+    account.resetTokenExpiry = null;
+    await account.save();
+
+    res.status(200).json({
+      message: "Password reset successful ✅",
+    });
   } catch (error) {
     console.error("RESET PASSWORD ERROR:", error);
     res.status(500).json({ message: "Server error ❌" });
   }
 });
 
-/* ================= HOD DASHBOARD ================= */
+/* =====================================================
+   ROLE DASHBOARDS
+===================================================== */
+
 router.get("/hod-dashboard", authMiddleware, (req, res) => {
   if (req.user.role !== "HOD") {
     return res.status(403).json({ message: "Access denied ❌ (HOD only)" });
   }
-
-  res.status(200).json({
-    message: "Welcome HOD Dashboard ✅",
-    user: req.user,
-  });
+  res.json({ message: "Welcome HOD Dashboard ✅", user: req.user });
 });
 
-/* ================= FACULTY DASHBOARD ================= */
 router.get("/faculty-dashboard", authMiddleware, (req, res) => {
   if (req.user.role !== "Faculty") {
-    return res.status(403).json({ message: "Access denied ❌ (Faculty only)" });
+    return res
+      .status(403)
+      .json({ message: "Access denied ❌ (Faculty only)" });
   }
-
-  res.status(200).json({
-    message: "Welcome Faculty Dashboard ✅",
-    user: req.user,
-  });
+  res.json({ message: "Welcome Faculty Dashboard ✅", user: req.user });
 });
 
-/* ================= STUDENT DASHBOARD ================= */
 router.get("/student-dashboard", authMiddleware, async (req, res) => {
   try {
     if (req.user.role !== "Student") {
-      return res.status(403).json({
-        message: "Access denied ❌ (Student only)",
-      });
+      return res
+        .status(403)
+        .json({ message: "Access denied ❌ (Student only)" });
     }
 
     const student = await Student.findOne({ email: req.user.email });
@@ -190,7 +201,7 @@ router.get("/student-dashboard", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Student record not found" });
     }
 
-    res.status(200).json({
+    res.json({
       message: "Welcome Student Dashboard ✅",
       user: {
         id: req.user.id,
@@ -206,9 +217,11 @@ router.get("/student-dashboard", authMiddleware, async (req, res) => {
   }
 });
 
-/* ================= GENERIC DASHBOARD ================= */
+/* =====================================================
+   GENERIC DASHBOARD
+===================================================== */
 router.get("/dashboard", authMiddleware, (req, res) => {
-  res.status(200).json({
+  res.json({
     message: `Welcome ${req.user.role} Dashboard ✅`,
     user: req.user,
   });
