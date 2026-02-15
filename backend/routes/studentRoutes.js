@@ -1,9 +1,10 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const Student = require("../models/Student");
-const authMiddleware = require("../middleware/authMiddleware");
-const fetchSheetData = require("../services/googlesheet");
+import Student from "../models/Student.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import fetchSheetData from "../services/googlesheet.js";
+
+const router = express.Router();
 
 /* =====================================================
    HELPER: Extract Google Sheet ID
@@ -173,35 +174,9 @@ router.post("/import", authMiddleware, async (req, res) => {
     res.status(500).json({ message: err.message || "Import failed" });
   }
 });
-router.post("/import", async (req, res) => {
-  try {
-    const { sheetUrl } = req.body;
-
-    const rows = await fetchSheetData(sheetUrl); // your existing function
-
-    const students = rows.map((row) => ({
-      name: row.name || "",
-      rollNo: row.rollNo || "",
-      department: row.department || "",
-      year: row.year || "",
-      phoneNo: row.phone || "",   // ✅ FIX HERE
-      email: row.email || "",     // ✅ ENSURE EMAIL IS MAPPED
-      extraFields: {},
-    }));
-
-    await Student.insertMany(students);
-
-    res.json({ message: "Students imported successfully" });
-  } catch (err) {
-    console.error("IMPORT ERROR:", err);
-    res.status(500).json({ message: "Import failed" });
-  }
-});
-
 
 /* =====================================================
    DELETE ANY COLUMN (CORE + DYNAMIC)
-   DELETE /students/column/:columnName
 ===================================================== */
 router.delete("/column/:columnName", authMiddleware, async (req, res) => {
   try {
@@ -211,14 +186,11 @@ router.delete("/column/:columnName", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Column name required" });
     }
 
-    let updateQuery = {};
+    let updateQuery;
 
-    // ✅ CORE FIELD
     if (CORE_FIELDS.includes(columnName)) {
       updateQuery = { $unset: { [columnName]: "" } };
-    } 
-    // ✅ DYNAMIC FIELD
-    else {
+    } else {
       updateQuery = { $unset: { [`extraFields.${columnName}`]: "" } };
     }
 
@@ -237,19 +209,24 @@ router.delete("/column/:columnName", authMiddleware, async (req, res) => {
   }
 });
 
-// DELETE DEFAULT COLUMN (SAFE)
-router.put("/column/default/:columnName", authMiddleware, async (req, res) => {
-  const { columnName } = req.params;
+/* =====================================================
+   CLEAR DEFAULT COLUMN SAFELY
+===================================================== */
+router.put(
+  "/column/default/:columnName",
+  authMiddleware,
+  async (req, res) => {
+    const { columnName } = req.params;
 
-  const allowed = ["name", "rollNo", "department", "year", "phoneNo", "email"];
-  if (!allowed.includes(columnName)) {
-    return res.status(400).json({ message: "Invalid default column" });
+    const allowed = CORE_FIELDS;
+    if (!allowed.includes(columnName)) {
+      return res.status(400).json({ message: "Invalid default column" });
+    }
+
+    await Student.updateMany({}, { $set: { [columnName]: "" } });
+
+    res.json({ message: `Default column '${columnName}' cleared` });
   }
+);
 
-  await Student.updateMany({}, { $set: { [columnName]: "" } });
-
-  res.json({ message: `Default column '${columnName}' cleared` });
-});
-
-
-module.exports = router;
+export default router;
