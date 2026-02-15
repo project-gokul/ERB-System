@@ -1,15 +1,9 @@
 {
-  "name": "backend",
+  "name": "dept-system-backend",
   "version": "1.0.0",
-  "description": "Dept System Backend API",
-  "main": "index.js",
-  "type": "commonjs",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "echo \"No tests specified\" && exit 0"
-  },
-  "keywords": [],
+  "description": "Dept System Backend API (Vercel Serverless)",
+  "type": "module",
+  "keywords": ["express", "vercel", "backend", "mongodb"],
   "author": "Gokul",
   "license": "ISC",
   "dependencies": {
@@ -21,9 +15,6 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.6",
     "nodemailer": "^8.0.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.11"
   },
   "engines": {
     "node": ">=18"
