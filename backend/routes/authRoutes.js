@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-import User from "../models/User.js";
+import user from "../models/user.js";
 import Student from "../models/Student.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import sendMail from "../utils/mailer.js";
