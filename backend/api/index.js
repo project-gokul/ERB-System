@@ -12,7 +12,6 @@ const app = express();
 app.use(cors({ origin: "*", credentials: true }));
 app.use(express.json());
 
-// MongoDB (serverless-safe)
 let cached = false;
 async function connectDB() {
   if (cached) return;
@@ -24,18 +23,17 @@ app.use(async (req, res, next) => {
   try {
     await connectDB();
     next();
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "DB connection failed" });
   }
 });
 
-// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/subjects", subjectRoutes);
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.json({ message: "Backend running on Vercel 🚀" });
 });
 
