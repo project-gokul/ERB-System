@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-import User from "../models/user.js";
+import User from "../models/User.js";
 import Student from "../models/Student.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import sendMail from "../utils/mailer.js";
@@ -55,7 +55,9 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
     }
 
     const user = await User.findOne({ email });
@@ -97,7 +99,9 @@ router.post("/login", async (req, res) => {
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
 
     let account = await User.findOne({ email });
     if (!account) {
@@ -131,13 +135,19 @@ router.post("/reset-password/:token", async (req, res) => {
   try {
     const { password } = req.body;
 
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
     const user = await User.findOne({
       resetToken: req.params.token,
       resetTokenExpiry: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
+      return res.status(400).json({
+        message: "Invalid or expired token",
+      });
     }
 
     user.password = await bcrypt.hash(password, 10);
@@ -145,7 +155,9 @@ router.post("/reset-password/:token", async (req, res) => {
     user.resetTokenExpiry = null;
     await user.save();
 
-    res.status(200).json({ message: "Password reset successful ✅" });
+    res.status(200).json({
+      message: "Password reset successful ✅",
+    });
   } catch (error) {
     console.error("RESET PASSWORD ERROR:", error);
     res.status(500).json({ message: "Server error ❌" });
@@ -153,29 +165,49 @@ router.post("/reset-password/:token", async (req, res) => {
 });
 
 /* ================= DASHBOARDS ================= */
+
 router.get("/hod-dashboard", authMiddleware, (req, res) => {
   if (req.user.role !== "HOD") {
-    return res.status(403).json({ message: "Access denied ❌ (HOD only)" });
+    return res.status(403).json({
+      message: "Access denied ❌ (HOD only)",
+    });
   }
-  res.json({ message: "Welcome HOD Dashboard ✅", user: req.user });
+
+  res.json({
+    message: "Welcome HOD Dashboard ✅",
+    user: req.user,
+  });
 });
 
 router.get("/faculty-dashboard", authMiddleware, (req, res) => {
   if (req.user.role !== "Faculty") {
-    return res.status(403).json({ message: "Access denied ❌ (Faculty only)" });
+    return res.status(403).json({
+      message: "Access denied ❌ (Faculty only)",
+    });
   }
-  res.json({ message: "Welcome Faculty Dashboard ✅", user: req.user });
+
+  res.json({
+    message: "Welcome Faculty Dashboard ✅",
+    user: req.user,
+  });
 });
 
 router.get("/student-dashboard", authMiddleware, async (req, res) => {
   try {
     if (req.user.role !== "Student") {
-      return res.status(403).json({ message: "Access denied ❌ (Student only)" });
+      return res.status(403).json({
+        message: "Access denied ❌ (Student only)",
+      });
     }
 
-    const student = await Student.findOne({ email: req.user.email });
+    const student = await Student.findOne({
+      email: req.user.email,
+    });
+
     if (!student) {
-      return res.status(404).json({ message: "Student record not found" });
+      return res.status(404).json({
+        message: "Student record not found",
+      });
     }
 
     res.json({
@@ -201,4 +233,5 @@ router.get("/dashboard", authMiddleware, (req, res) => {
   });
 });
 
+/* ================= EXPORT ================= */
 export default router;
