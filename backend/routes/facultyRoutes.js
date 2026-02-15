@@ -35,9 +35,9 @@ router.post("/", authMiddleware, async (req, res) => {
     });
 
     res.status(201).json(faculty);
-  } catch (err) {
-    console.error("CREATE FACULTY ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+  } catch (error) {
+    console.error("CREATE FACULTY ERROR:", error);
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
@@ -48,10 +48,10 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const faculty = await Faculty.find().sort({ createdAt: -1 });
-    res.json(faculty);
-  } catch (err) {
-    console.error("FETCH FACULTY ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(200).json(faculty);
+  } catch (error) {
+    console.error("FETCH FACULTY ERROR:", error);
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
@@ -75,17 +75,17 @@ router.delete("/column/:columnName", authMiddleware, async (req, res) => {
       { $unset: { [`extraFields.${columnName}`]: "" } }
     );
 
-    res.json({
+    res.status(200).json({
       message: `Column '${columnName}' deleted successfully`,
     });
-  } catch (err) {
-    console.error("DELETE COLUMN ERROR:", err);
-    res.status(500).json({ message: "Failed to delete column" });
+  } catch (error) {
+    console.error("DELETE COLUMN ERROR:", error);
+    res.status(500).json({ message: "Failed to delete column ❌" });
   }
 });
 
 /* =====================================================
-   UPDATE FACULTY (INLINE EDIT SAFE)
+   UPDATE FACULTY
    PUT /api/faculty/:id
 ===================================================== */
 router.put("/:id", authMiddleware, async (req, res) => {
@@ -102,10 +102,10 @@ router.put("/:id", authMiddleware, async (req, res) => {
       });
     }
 
-    res.json(updated);
-  } catch (err) {
-    console.error("UPDATE FACULTY ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(200).json(updated);
+  } catch (error) {
+    console.error("UPDATE FACULTY ERROR:", error);
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
@@ -123,10 +123,12 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       });
     }
 
-    res.json({ message: "Faculty deleted successfully" });
-  } catch (err) {
-    console.error("DELETE FACULTY ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(200).json({
+      message: "Faculty deleted successfully ✅",
+    });
+  } catch (error) {
+    console.error("DELETE FACULTY ERROR:", error);
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
@@ -137,10 +139,10 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 router.get("/count", authMiddleware, async (req, res) => {
   try {
     const count = await Faculty.countDocuments();
-    res.json({ count });
-  } catch (err) {
-    console.error("COUNT ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("COUNT ERROR:", error);
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
@@ -170,11 +172,12 @@ router.get("/year-count", authMiddleware, async (req, res) => {
       result[item._id] = item.count;
     });
 
-    res.json(result);
-  } catch (err) {
-    console.error("YEAR COUNT ERROR:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("YEAR COUNT ERROR:", error);
+    res.status(500).json({ message: "Server error ❌" });
   }
 });
 
+/* ================= EXPORT ================= */
 export default router;
