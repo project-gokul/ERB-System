@@ -1,14 +1,14 @@
-const express = require("express");
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
+
+import User from "../models/user.js";
+import Student from "../models/Student.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import sendMail from "../utils/mailer.js";
+
 const router = express.Router();
-const User = require("../models/user");
-const Student = require("../models/Student");
-
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-
-const authMiddleware = require("../middleware/authMiddleware");
-const sendMail = require("../utils/mailer");
 
 /* =====================================================
    REGISTER API
@@ -96,15 +96,10 @@ router.post("/login", async (req, res) => {
 ===================================================== */
 router.post("/forgot-password", async (req, res) => {
   try {
-    console.log("📩 Forgot password hit");
-
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required" });
 
-    // 🔍 Check in User collection
     let account = await User.findOne({ email });
-
-    // 🔍 If not found, check Student collection
     if (!account) {
       account = await Student.findOne({ email });
     }
@@ -119,7 +114,7 @@ router.post("/forgot-password", async (req, res) => {
     account.resetTokenExpiry = Date.now() + 10 * 60 * 1000;
     await account.save();
 
-    const resetLink = `http://localhost:5173/reset-password/${token}`;
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
     await sendMail(account.email, resetLink);
 
     res.json({ message: "Reset link sent to email ✅" });
@@ -219,4 +214,4 @@ router.get("/dashboard", authMiddleware, (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;
