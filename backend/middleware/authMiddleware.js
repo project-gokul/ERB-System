@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
   try {
@@ -17,16 +17,17 @@ const authMiddleware = (req, res, next) => {
     // ✅ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ Attach user info
+    // ✅ Attach user info to request
     req.user = decoded;
 
     next();
   } catch (error) {
     console.error("AUTH ERROR:", error);
-    res.status(401).json({
+
+    return res.status(401).json({
       message: "Invalid or expired token ❌",
     });
   }
 };
 
-module.exports = authMiddleware;
+export default authMiddleware;
