@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import Subject from "../models/Subject.js";
+
 const router = express.Router();
-const Subject = require("../models/Subject");
 
 /* ➕ ADD SUBJECT */
 router.post("/add", async (req, res) => {
@@ -23,14 +24,12 @@ router.post("/add", async (req, res) => {
       });
     }
 
-    const subject = new Subject({
+    const subject = await Subject.create({
       subjectName,
       subjectCode,
       department,
       year,
     });
-
-    await subject.save();
 
     res.status(201).json({
       message: "Subject added successfully",
@@ -75,7 +74,6 @@ router.put("/material/:id", async (req, res) => {
 router.get("/:year", async (req, res) => {
   try {
     const year = decodeURIComponent(req.params.year);
-
     const subjects = await Subject.find({ year });
 
     res.status(200).json(subjects);
@@ -101,4 +99,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
