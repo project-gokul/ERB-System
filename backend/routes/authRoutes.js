@@ -1,5 +1,5 @@
 const express = require("express");
-const authRoute = express.Router();
+const authRoutes = express.Router();
 const User = require("../models/user");
 const Student = require("../models/Student");
 
@@ -219,4 +219,4 @@ router.get("/dashboard", authMiddleware, (req, res) => {
   });
 });
 
-module.exports = authRoute;
+module.exports = authRoutes;
