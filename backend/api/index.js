@@ -9,14 +9,30 @@ import subjectRoutes from "../routes/subjectRoutes.js";
 
 const app = express();
 
-app.use(cors({ origin: "*", credentials: true }));
+/* ================= MIDDLEWARE ================= */
+app.use(
+  cors({
+    origin: "*", // later replace with frontend URL
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-let cached = false;
+/* ================= MONGODB CONNECTION (VERCEL SAFE) ================= */
+let isConnected = false;
+
 async function connectDB() {
-  if (cached) return;
-  await mongoose.connect(process.env.MONGO_URI);
-  cached = true;
+  if (isConnected) return;
+
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    isConnected = true;
+    console.log("MongoDB connected ✅");
+  } catch (err) {
+    console.error("MongoDB connection failed ❌", err);
+    throw err;
+  }
 }
 
 app.use(async (req, res, next) => {
@@ -24,17 +40,19 @@ app.use(async (req, res, next) => {
     await connectDB();
     next();
   } catch {
-    res.status(500).json({ error: "DB connection failed" });
+    res.status(500).json({ message: "Database connection failed ❌" });
   }
 });
 
+/* ================= ROUTES ================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/subjects", subjectRoutes);
 
-app.get("/", (_, res) => {
-  res.json({ message: "Backend running on Vercel 🚀" });
+/* ================= HEALTH CHECK ================= */
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Backend running on Vercel 🚀" });
 });
 
 export default app;
