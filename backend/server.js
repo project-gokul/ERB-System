@@ -11,14 +11,29 @@ const subjectRoutes = require("./routes/subjectRoutes");
 
 const app = express();
 
-// ================= MIDDLEWARE =================
+// ================= CORS CONFIG =================
+const allowedOrigins = [
+  "http://localhost:5173",          // Local Vite
+  "https://dept-system.vercel.app"  // Vercel frontend (change if different)
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite frontend
+    origin: function (origin, callback) {
+      // allow requests with no origin (Postman, mobile apps)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
     credentials: true,
   })
 );
 
+// ================= MIDDLEWARE =================
 app.use(express.json());
 
 // ================= ROUTES =================
@@ -29,16 +44,19 @@ app.use("/api/subjects", subjectRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "Backend & MongoDB are running 🚀" });
+  res.status(200).json({
+    message: "Backend & MongoDB are running 🚀",
+  });
 });
 
 // ================= MONGODB + SERVER =================
+const PORT = process.env.PORT || 5000;
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected ✅");
 
-    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
