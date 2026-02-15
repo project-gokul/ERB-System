@@ -99,4 +99,8 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.get("/", (req, res) => {
+  res.json({ message: "Subject route working ✅" });
+});
+
 export default router;
