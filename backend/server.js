@@ -4,17 +4,17 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 // ================= IMPORT ROUTES =================
-const authRoutes = require("./routes/authRoutes");
-const facultyRoutes = require("./routes/facultyRoutes");
-const studentRoutes = require("./routes/studentRoutes");
-const subjectRoutes = require("./routes/subjectRoutes");
+const authRoutes = require("../routes/authRoutes");
+const facultyRoutes = require("../routes/facultyRoutes");
+const studentRoutes = require("../routes/studentRoutes");
+const subjectRoutes = require("../routes/subjectRoutes");
 
 const app = express();
 
 // ================= MIDDLEWARE =================
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite frontend
+    origin: "*", // later restrict to frontend URL
     credentials: true,
   })
 );
@@ -29,21 +29,32 @@ app.use("/api/subjects", subjectRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
-  res.status(200).json({ message: "Backend & MongoDB are running 🚀" });
+  res.status(200).json({
+    message: "Backend running on Vercel 🚀",
+  });
 });
 
-// ================= MONGODB + SERVER =================
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB Connected ✅");
+// ================= MONGODB CONNECTION =================
+let isConnected = false;
 
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error("MongoDB Error ❌", err);
-    process.exit(1);
-  });
+async function connectDB() {
+  if (isConnected) return;
+
+  await mongoose.connect(process.env.MONGO_URI);
+  isConnected = true;
+  console.log("MongoDB connected ✅");
+}
+
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("MongoDB connection failed ❌", err);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
+
+// ❌ NO app.listen()
+// ✅ EXPORT app
+module.exports = app;
