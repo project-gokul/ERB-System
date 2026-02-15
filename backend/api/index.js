@@ -3,21 +3,15 @@ import cors from "cors";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-// ================= LOAD ENV =================
+// ================= CONFIG =================
 dotenv.config();
-
-// ================= IMPORT ROUTES =================
-import authRoutes from "../routes/authRoutes.js";
-import facultyRoutes from "../routes/facultyRoutes.js";
-import studentRoutes from "../routes/studentRoutes.js";
-import subjectRoutes from "../routes/subjectRoutes.js";
 
 const app = express();
 
 // ================= MIDDLEWARE =================
 app.use(
   cors({
-    origin: "*", // 🔴 TEMPORARY (we will restrict to frontend URL later)
+    origin: "*", // later restrict to frontend URL
     credentials: true,
   })
 );
@@ -25,6 +19,11 @@ app.use(
 app.use(express.json());
 
 // ================= ROUTES =================
+import authRoutes from "../routes/authRoutes.js";
+import facultyRoutes from "../routes/facultyRoutes.js";
+import studentRoutes from "../routes/studentRoutes.js";
+import subjectRoutes from "../routes/subjectRoutes.js";
+
 app.use("/api/auth", authRoutes);
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/students", studentRoutes);
@@ -32,19 +31,23 @@ app.use("/api/subjects", subjectRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
-  res.status(200).json({
-    message: "Dept System Backend running on Vercel 🚀",
-  });
+  res.json({ message: "Backend running on Vercel 🚀" });
 });
 
-// ================= MONGODB CONNECTION =================
-// Prevent reconnecting on every request (important for serverless)
-if (mongoose.connection.readyState === 0) {
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB Connected ✅"))
-    .catch((err) => console.error("MongoDB Connection Error ❌", err));
+// ================= MONGODB (SERVERLESS SAFE) =================
+let isConnected = false;
+
+async function connectDB() {
+  if (isConnected) return;
+
+  await mongoose.connect(process.env.MONGO_URI);
+  isConnected = true;
+  console.log("MongoDB connected ✅");
 }
 
-// ❌ DO NOT use app.listen() on Vercel
+connectDB().catch((err) => {
+  console.error("MongoDB error ❌", err);
+});
+
+// ❗ IMPORTANT
 export default app;
