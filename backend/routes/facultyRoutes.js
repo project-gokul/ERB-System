@@ -1,8 +1,9 @@
-const express = require("express");
-const router = express.Router();
+import express from "express";
 
-const Faculty = require("../models/Faculty");
-const authMiddleware = require("../middleware/authMiddleware");
+import Faculty from "../models/Faculty.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+
+const router = express.Router();
 
 /* =====================================================
    CREATE FACULTY (STATIC + DYNAMIC FIELDS)
@@ -59,33 +60,29 @@ router.get("/", authMiddleware, async (req, res) => {
    DELETE /api/faculty/column/:columnName
    ⚠ MUST COME BEFORE /:id
 ===================================================== */
-router.delete(
-  "/column/:columnName",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const { columnName } = req.params;
+router.delete("/column/:columnName", authMiddleware, async (req, res) => {
+  try {
+    const { columnName } = req.params;
 
-      if (!columnName) {
-        return res.status(400).json({
-          message: "Column name is required",
-        });
-      }
-
-      await Faculty.updateMany(
-        {},
-        { $unset: { [`extraFields.${columnName}`]: "" } }
-      );
-
-      res.json({
-        message: `Column '${columnName}' deleted successfully`,
+    if (!columnName) {
+      return res.status(400).json({
+        message: "Column name is required",
       });
-    } catch (err) {
-      console.error("DELETE COLUMN ERROR:", err);
-      res.status(500).json({ message: "Failed to delete column" });
     }
+
+    await Faculty.updateMany(
+      {},
+      { $unset: { [`extraFields.${columnName}`]: "" } }
+    );
+
+    res.json({
+      message: `Column '${columnName}' deleted successfully`,
+    });
+  } catch (err) {
+    console.error("DELETE COLUMN ERROR:", err);
+    res.status(500).json({ message: "Failed to delete column" });
   }
-);
+});
 
 /* =====================================================
    UPDATE FACULTY (INLINE EDIT SAFE)
@@ -180,4 +177,4 @@ router.get("/year-count", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
