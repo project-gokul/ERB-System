@@ -1,53 +1,53 @@
-import express from "express";
-import cors from "cors";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+// import express from "express";
+// import cors from "cors";
+// import mongoose from "mongoose";
+// import dotenv from "dotenv";
 
-// ================= CONFIG =================
-dotenv.config();
+// // ================= CONFIG =================
+// dotenv.config();
 
-const app = express();
+// const app = express();
 
-// ================= MIDDLEWARE =================
-app.use(
-  cors({
-    origin: "*", // later restrict to frontend URL
-    credentials: true,
-  })
-);
+// // ================= MIDDLEWARE =================
+// app.use(
+//   cors({
+//     origin: "*", // later restrict to frontend URL
+//     credentials: true,
+//   })
+// );
 
-app.use(express.json());
+// app.use(express.json());
 
-// ================= ROUTES =================
-import authRoutes from "../routes/authRoutes.js";
-import facultyRoutes from "../routes/facultyRoutes.js";
-import studentRoutes from "../routes/studentRoutes.js";
-import subjectRoutes from "../routes/subjectRoutes.js";
+// // ================= ROUTES =================
+// import authRoutes from "../routes/authRoutes.js";
+// import facultyRoutes from "../routes/facultyRoutes.js";
+// import studentRoutes from "../routes/studentRoutes.js";
+// import subjectRoutes from "../routes/subjectRoutes.js";
 
-app.use("/api/auth", authRoutes);
-app.use("/api/faculty", facultyRoutes);
-app.use("/api/students", studentRoutes);
-app.use("/api/subjects", subjectRoutes);
+// app.use("/api/auth", authRoutes);
+// app.use("/api/faculty", facultyRoutes);
+// app.use("/api/students", studentRoutes);
+// app.use("/api/subjects", subjectRoutes);
 
-// ================= HEALTH CHECK =================
-app.get("/", (req, res) => {
-  res.json({ message: "Backend running on Vercel 🚀" });
-});
+// // ================= HEALTH CHECK =================
+// app.get("/", (req, res) => {
+//   res.json({ message: "Backend running on Vercel 🚀" });
+// });
 
-// ================= MONGODB (SERVERLESS SAFE) =================
-let isConnected = false;
+// // ================= MONGODB (SERVERLESS SAFE) =================
+// let isConnected = false;
 
-async function connectDB() {
-  if (isConnected) return;
+// async function connectDB() {
+//   if (isConnected) return;
 
-  await mongoose.connect(process.env.MONGO_URI);
-  isConnected = true;
-  console.log("MongoDB connected ✅");
-}
+//   await mongoose.connect(process.env.MONGO_URI);
+//   isConnected = true;
+//   console.log("MongoDB connected ✅");
+// }
 
-connectDB().catch((err) => {
-  console.error("MongoDB error ❌", err);
-});
+// connectDB().catch((err) => {
+//   console.error("MongoDB error ❌", err);
+// });
 
-// ❗ IMPORTANT
-export default app;
+// // ❗ IMPORTANT
+// export default app;
