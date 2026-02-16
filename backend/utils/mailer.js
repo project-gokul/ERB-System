@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -8,24 +8,19 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ✅ Verify transporter once at startup (safe for Vercel)
-transporter.verify((error) => {
+// ✅ Verify transporter once at startup (optional but recommended)
+transporter.verify((error, success) => {
   if (error) {
-    console.error("❌ Email transporter error:", error);
+    console.error("Email transporter error ❌", error);
   } else {
-    console.log("✅ Email transporter ready");
+    console.log("Email transporter ready ✅");
   }
 });
 
-/**
- * Send password reset email
- * @param {string} to - receiver email
- * @param {string} link - reset password link
- */
-const sendMail = async (to, link) => {
+module.exports = async (to, link) => {
   try {
     await transporter.sendMail({
-      from: `"Dept System" <${process.env.EMAIL}>`,
+      from: `"Dept System" <${process.env.EMAIL}>`, // ✅ REQUIRED
       to,
       subject: "Reset Your Password",
       html: `
@@ -36,9 +31,7 @@ const sendMail = async (to, link) => {
       `,
     });
   } catch (error) {
-    console.error("❌ Email send failed:", error);
-    throw error; // important: let route handle failure
+    console.error("Email send failed ❌", error);
+    throw error; // 🔴 IMPORTANT: let route catch this
   }
 };
-
-export default sendMail;

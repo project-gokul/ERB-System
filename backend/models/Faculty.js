@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const facultySchema = new mongoose.Schema(
   {
@@ -6,29 +6,23 @@ const facultySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true,
     },
 
     email: {
       type: String,
       required: true,
-      lowercase: true,
-      trim: true,
     },
 
     department: {
       type: String,
       required: true,
-      trim: true,
     },
 
     year: {
       type: String,
       required: true,
-      trim: true,
     },
 
-    // 🔥 DYNAMIC COLUMNS
     extraFields: {
       type: Map,
       of: String,
@@ -38,6 +32,4 @@ const facultySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Faculty = mongoose.model("Faculty", facultySchema);
-
-export default Faculty;
+module.exports = mongoose.model("Faculty", facultySchema);

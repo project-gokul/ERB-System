@@ -1,41 +1,35 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const subjectSchema = new mongoose.Schema(
   {
     subjectName: {
       type: String,
       required: true,
-      trim: true,
     },
 
     subjectCode: {
       type: String,
       required: true,
       unique: true,
-      trim: true,
     },
 
     department: {
       type: String,
       required: true,
-      trim: true,
     },
 
     year: {
       type: String,
       required: true,
-      trim: true,
     },
 
-    // ✅ MATERIAL / DOWNLOAD LINK
+    // ✅ NEW FIELD FOR DOWNLOAD / MATERIAL LINK
     materialLink: {
       type: String,
-      default: "",
+      default: "", // empty if not added
     },
   },
   { timestamps: true }
 );
 
-const Subject = mongoose.model("Subject", subjectSchema);
-
-export default Subject;
+module.exports = mongoose.model("Subject", subjectSchema);

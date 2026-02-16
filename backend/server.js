@@ -1,52 +1,49 @@
-// const express = require("express");
-// const cors = require("cors");
-// const mongoose = require("mongoose");
-// require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
-// // ===== Import routes (note the ../) =====
-// const authRoutes = require("../routes/authRoutes");
-// const facultyRoutes = require("../routes/facultyRoutes");
-// const studentRoutes = require("../routes/studentRoutes");
-// const subjectRoutes = require("../routes/subjectRoutes");
+// ================= IMPORT ROUTES =================
+const authRoutes = require("./routes/authRoutes");
+const facultyRoutes = require("./routes/facultyRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const subjectRoutes = require("./routes/subjectRoutes");
 
-// const app = express();
+const app = express();
 
-// // ===== Middleware =====
-// app.use(cors({ origin: "*", credentials: true }));
-// app.use(express.json());
+// ================= MIDDLEWARE =================
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Vite frontend
+    credentials: true,
+  })
+);
 
-// // ===== MongoDB connection (serverless-safe) =====
-// let cachedConnection = null;
+app.use(express.json());
 
-// async function connectDB() {
-//   if (cachedConnection) return cachedConnection;
+// ================= ROUTES =================
+app.use("/api/auth", authRoutes);
+app.use("/api/faculty", facultyRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/subjects", subjectRoutes);
 
-//   cachedConnection = await mongoose.connect(process.env.MONGO_URI);
-//   return cachedConnection;
-// }
+// ================= HEALTH CHECK =================
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Backend & MongoDB are running 🚀" });
+});
 
-// // Ensure DB is connected for every request
-// app.use(async (req, res, next) => {
-//   try {
-//     await connectDB();
-//     next();
-//   } catch (err) {
-//     console.error("MongoDB connection error:", err);
-//     res.status(500).json({ error: "Database connection failed" });
-//   }
-// });
+// ================= MONGODB + SERVER =================
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB Connected ✅");
 
-// // ===== Routes =====
-// app.use("/api/auth", authRoutes);
-// app.use("/api/faculty", facultyRoutes);
-// app.use("/api/students", studentRoutes);
-// app.use("/api/subjects", subjectRoutes);
-
-// // ===== Health check =====
-// app.get("/", (req, res) => {
-//   res.json({ message: "Backend running on Vercel 🚀" });
-// });
-
-// // ❌ NO app.listen()
-// // ✅ EXPORT the app
-// module.exports = app;
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB Error ❌", err);
+    process.exit(1);
+  });

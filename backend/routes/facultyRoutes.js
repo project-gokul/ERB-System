@@ -1,9 +1,8 @@
-import express from "express";
-
-import Faculty from "../models/Faculty.js";
-import authMiddleware from "../middleware/authMiddleware.js";
-
+const express = require("express");
 const router = express.Router();
+
+const Faculty = require("../models/Faculty");
+const authMiddleware = require("../middleware/authMiddleware");
 
 /* =====================================================
    CREATE FACULTY (STATIC + DYNAMIC FIELDS)
@@ -35,9 +34,9 @@ router.post("/", authMiddleware, async (req, res) => {
     });
 
     res.status(201).json(faculty);
-  } catch (error) {
-    console.error("CREATE FACULTY ERROR:", error);
-    res.status(500).json({ message: "Server error ❌" });
+  } catch (err) {
+    console.error("CREATE FACULTY ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -48,10 +47,10 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get("/", authMiddleware, async (req, res) => {
   try {
     const faculty = await Faculty.find().sort({ createdAt: -1 });
-    res.status(200).json(faculty);
-  } catch (error) {
-    console.error("FETCH FACULTY ERROR:", error);
-    res.status(500).json({ message: "Server error ❌" });
+    res.json(faculty);
+  } catch (err) {
+    console.error("FETCH FACULTY ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -60,32 +59,36 @@ router.get("/", authMiddleware, async (req, res) => {
    DELETE /api/faculty/column/:columnName
    ⚠ MUST COME BEFORE /:id
 ===================================================== */
-router.delete("/column/:columnName", authMiddleware, async (req, res) => {
-  try {
-    const { columnName } = req.params;
+router.delete(
+  "/column/:columnName",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { columnName } = req.params;
 
-    if (!columnName) {
-      return res.status(400).json({
-        message: "Column name is required",
+      if (!columnName) {
+        return res.status(400).json({
+          message: "Column name is required",
+        });
+      }
+
+      await Faculty.updateMany(
+        {},
+        { $unset: { [`extraFields.${columnName}`]: "" } }
+      );
+
+      res.json({
+        message: `Column '${columnName}' deleted successfully`,
       });
+    } catch (err) {
+      console.error("DELETE COLUMN ERROR:", err);
+      res.status(500).json({ message: "Failed to delete column" });
     }
-
-    await Faculty.updateMany(
-      {},
-      { $unset: { [`extraFields.${columnName}`]: "" } }
-    );
-
-    res.status(200).json({
-      message: `Column '${columnName}' deleted successfully`,
-    });
-  } catch (error) {
-    console.error("DELETE COLUMN ERROR:", error);
-    res.status(500).json({ message: "Failed to delete column ❌" });
   }
-});
+);
 
 /* =====================================================
-   UPDATE FACULTY
+   UPDATE FACULTY (INLINE EDIT SAFE)
    PUT /api/faculty/:id
 ===================================================== */
 router.put("/:id", authMiddleware, async (req, res) => {
@@ -102,10 +105,10 @@ router.put("/:id", authMiddleware, async (req, res) => {
       });
     }
 
-    res.status(200).json(updated);
-  } catch (error) {
-    console.error("UPDATE FACULTY ERROR:", error);
-    res.status(500).json({ message: "Server error ❌" });
+    res.json(updated);
+  } catch (err) {
+    console.error("UPDATE FACULTY ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -123,12 +126,10 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      message: "Faculty deleted successfully ✅",
-    });
-  } catch (error) {
-    console.error("DELETE FACULTY ERROR:", error);
-    res.status(500).json({ message: "Server error ❌" });
+    res.json({ message: "Faculty deleted successfully" });
+  } catch (err) {
+    console.error("DELETE FACULTY ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -139,10 +140,10 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 router.get("/count", authMiddleware, async (req, res) => {
   try {
     const count = await Faculty.countDocuments();
-    res.status(200).json({ count });
-  } catch (error) {
-    console.error("COUNT ERROR:", error);
-    res.status(500).json({ message: "Server error ❌" });
+    res.json({ count });
+  } catch (err) {
+    console.error("COUNT ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -172,12 +173,11 @@ router.get("/year-count", authMiddleware, async (req, res) => {
       result[item._id] = item.count;
     });
 
-    res.status(200).json(result);
-  } catch (error) {
-    console.error("YEAR COUNT ERROR:", error);
-    res.status(500).json({ message: "Server error ❌" });
+    res.json(result);
+  } catch (err) {
+    console.error("YEAR COUNT ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
-/* ================= EXPORT ================= */
-export default router;
+module.exports = router;
