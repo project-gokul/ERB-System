@@ -2,29 +2,54 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
   try {
+    // ================= GET AUTH HEADER =================
     const authHeader = req.headers.authorization;
 
-    // ❌ No token
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader) {
       return res.status(401).json({
-        message: "Authorization token missing ❌",
+        success: false,
+        message: "Authorization header missing",
       });
     }
 
-    // ✅ Extract token
+    // ================= CHECK BEARER =================
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        message: "Authorization format must be: Bearer <token>",
+      });
+    }
+
+    // ================= EXTRACT TOKEN =================
     const token = authHeader.split(" ")[1];
 
-    // ✅ Verify token
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Token missing",
+      });
+    }
+
+    // ================= VERIFY TOKEN =================
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // ✅ Attach user info
-    req.user = decoded;
+    // ================= ATTACH USER =================
+    req.user = {
+      id: decoded.id,       // user id
+      role: decoded.role,   // student / faculty / admin
+      email: decoded.email,
+    };
 
     next();
   } catch (error) {
-    console.error("AUTH ERROR:", error);
-    res.status(401).json({
-      message: "Invalid or expired token ❌",
+    console.error("AUTH ERROR:", error.message);
+
+    return res.status(401).json({
+      success: false,
+      message:
+        error.name === "TokenExpiredError"
+          ? "Token expired. Please login again."
+          : "Invalid token",
     });
   }
 };

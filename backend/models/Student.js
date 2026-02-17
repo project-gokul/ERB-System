@@ -28,10 +28,11 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ✅ FIXED: NOT REQUIRED (prevents import crash)
     phoneNo: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
     },
 
     email: {

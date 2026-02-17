@@ -1,54 +1,44 @@
 const axios = require("axios");
 
-/**
- * Fetch data from ANY Google Sheet safely
- */
-const fetchSheetData = async (sheetId, sheetName = "Form responses 1") => {
-  if (!sheetId) {
-    throw new Error("Sheet ID is required");
+/*
+  Returns rows like:
+  {
+    name, rollNo, department, year, phone, email, extraFields
   }
+*/
+const fetchSheetData = async (sheetId, sheetName) => {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json${
+    sheetName ? `&sheet=${encodeURIComponent(sheetName)}` : ""
+  }`;
 
-  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(
-    sheetName
-  )}`;
-
-  const response = await axios.get(SHEET_URL);
-
-  const raw = response.data;
-  const json = JSON.parse(raw.substring(47, raw.length - 2));
-
-  if (!json.table || !json.table.rows) {
-    throw new Error("Invalid Google Sheet format");
-  }
-
-  const headers = json.table.cols.map((c, i) =>
-    c.label?.trim() || `Column_${i + 1}`
+  const res = await axios.get(url);
+  const text = res.data.substring(
+    res.data.indexOf("{"),
+    res.data.lastIndexOf("}") + 1
   );
 
-  const students = json.table.rows.map((row) => {
-    const student = { extraFields: {} };
+  const json = JSON.parse(text);
+  const cols = json.table.cols.map((c) => c.label);
+  const rows = json.table.rows;
 
-    row.c.forEach((cell, index) => {
-      const key = headers[index];
-      const value = cell?.v?.toString().trim() || "";
+  return rows.map((r) => {
+    const rowObj = {};
 
-      const lower = key.toLowerCase();
-
-      if (lower.includes("name")) student.name = value;
-      else if (lower.includes("roll")) student.rollNo = value;
-      else if (lower.includes("department")) student.department = value;
-      else if (lower.includes("year")) student.year = value;
-      else if (lower.includes("phone")) student.phoneNo = value;
-      else if (lower.includes("email")) student.email = value;
-      else student.extraFields[key] = value;
+    cols.forEach((col, i) => {
+      const key = col.trim();
+      rowObj[key] = r.c[i]?.v ?? "";
     });
 
-    return student;
+    return {
+      name: rowObj.Name || rowObj.name ||  rowObj.NAME || "",
+      rollNo: rowObj.rollNo || rowObj.RollNo || rowObj.ROLLNO || "",
+      department: rowObj.department || rowObj.Department || rowObj.DEPARTMENT || "",
+      year: rowObj.year || rowObj.Year || rowObj.YEAR || "",
+      phone: rowObj.phone || rowObj.Phone || rowObj.PHONE || "",
+      email: rowObj.email || rowObj.Email || rowObj.EMAIL || "",
+      extraFields: {},
+    };
   });
-
-  return students.filter(
-    (s) => s.name && s.rollNo && s.department && s.year
-  );
 };
 
 module.exports = fetchSheetData;

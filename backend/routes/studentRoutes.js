@@ -41,7 +41,7 @@ router.post("/", authMiddleware, async (req, res) => {
       extraFields = {},
     } = req.body;
 
-    if (!name || !rollNo || !department || !year || !phoneNo || !email) {
+    if (!name || !rollNo || !department || !year || !email) {
       return res.status(400).json({ message: "Required fields missing" });
     }
 
@@ -55,7 +55,7 @@ router.post("/", authMiddleware, async (req, res) => {
       rollNo,
       department,
       year,
-      phoneNo,
+      phoneNo: phoneNo || "",
       email,
       extraFields,
     });
@@ -121,7 +121,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 });
 
 /* =====================================================
-   IMPORT FROM GOOGLE SHEET
+   IMPORT FROM GOOGLE SHEET  ✅ FIXED
 ===================================================== */
 router.post("/import", authMiddleware, async (req, res) => {
   try {
@@ -143,19 +143,19 @@ router.post("/import", authMiddleware, async (req, res) => {
 
     let imported = 0;
 
-    for (const student of sheetData) {
-      if (!student.rollNo) continue;
+    for (const row of sheetData) {
+      if (!row.rollNo) continue;
 
       await Student.updateOne(
-        { rollNo: student.rollNo },
+        { rollNo: row.rollNo },
         {
           $set: {
-            name: student.name,
-            department: student.department,
-            year: student.year,
-            phoneNo: student.phoneNo,
-            email: student.email,
-            extraFields: student.extraFields || {},
+            name: row.name || "",
+            department: row.department || "",
+            year: row.year || "",
+            phoneNo: row.phone || row.phoneNo || "", // ✅ FIX
+            email: row.email || "",
+            extraFields: row.extraFields || {},
           },
         },
         { upsert: true }
@@ -170,38 +170,12 @@ router.post("/import", authMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error("IMPORT ERROR:", err);
-    res.status(500).json({ message: err.message || "Import failed" });
-  }
-});
-router.post("/import", async (req, res) => {
-  try {
-    const { sheetUrl } = req.body;
-
-    const rows = await fetchSheetData(sheetUrl); // your existing function
-
-    const students = rows.map((row) => ({
-      name: row.name || "",
-      rollNo: row.rollNo || "",
-      department: row.department || "",
-      year: row.year || "",
-      phoneNo: row.phone || "",   // ✅ FIX HERE
-      email: row.email || "",     // ✅ ENSURE EMAIL IS MAPPED
-      extraFields: {},
-    }));
-
-    await Student.insertMany(students);
-
-    res.json({ message: "Students imported successfully" });
-  } catch (err) {
-    console.error("IMPORT ERROR:", err);
     res.status(500).json({ message: "Import failed" });
   }
 });
 
-
 /* =====================================================
    DELETE ANY COLUMN (CORE + DYNAMIC)
-   DELETE /students/column/:columnName
 ===================================================== */
 router.delete("/column/:columnName", authMiddleware, async (req, res) => {
   try {
@@ -213,12 +187,9 @@ router.delete("/column/:columnName", authMiddleware, async (req, res) => {
 
     let updateQuery = {};
 
-    // ✅ CORE FIELD
     if (CORE_FIELDS.includes(columnName)) {
       updateQuery = { $unset: { [columnName]: "" } };
-    } 
-    // ✅ DYNAMIC FIELD
-    else {
+    } else {
       updateQuery = { $unset: { [`extraFields.${columnName}`]: "" } };
     }
 
@@ -228,16 +199,16 @@ router.delete("/column/:columnName", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Column not found" });
     }
 
-    res.json({
-      message: `Column '${columnName}' deleted successfully`,
-    });
+    res.json({ message: `Column '${columnName}' deleted successfully` });
   } catch (err) {
     console.error("DELETE COLUMN ERROR:", err);
     res.status(500).json({ message: "Failed to delete column" });
   }
 });
 
-// DELETE DEFAULT COLUMN (SAFE)
+/* =====================================================
+   CLEAR DEFAULT COLUMN (SAFE)
+===================================================== */
 router.put("/column/default/:columnName", authMiddleware, async (req, res) => {
   const { columnName } = req.params;
 
@@ -250,6 +221,5 @@ router.put("/column/default/:columnName", authMiddleware, async (req, res) => {
 
   res.json({ message: `Default column '${columnName}' cleared` });
 });
-
 
 module.exports = router;
