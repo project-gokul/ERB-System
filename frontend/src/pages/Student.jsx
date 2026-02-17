@@ -5,6 +5,15 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "./Student.css";
 
+const BASE_COLUMNS = [
+  { key: "name", label: "Name" },
+  { key: "rollNo", label: "Roll No" },
+  { key: "department", label: "Department" },
+  { key: "year", label: "Year" },
+  { key: "phoneNo", label: "Phone" },
+  { key: "email", label: "Email" },
+];
+
 function Student() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -12,11 +21,7 @@ function Student() {
   const [extraColumns, setExtraColumns] = useState([]);
   const [selectedYear, setSelectedYear] = useState("All");
 
-  // 🔥 Inline edit state
-  const [editingCell, setEditingCell] = useState({
-    id: null,
-    field: null,
-  });
+  const [editingCell, setEditingCell] = useState({ id: null, field: null });
 
   const [form, setForm] = useState({
     name: "",
@@ -33,7 +38,7 @@ function Student() {
     try {
       setLoading(true);
       const res = await api.get("/students");
-      const data = res.data;
+      const data = res.data || [];
       setStudents(data);
 
       const cols = new Set();
@@ -55,22 +60,29 @@ function Student() {
   }, []);
 
   /* ================= INLINE EDIT ================= */
- const startEdit = (id, field) => {
-  setEditingCell({ id, field });
-};
+  const startEdit = (id, field) => {
+    setEditingCell({ id, field });
+  };
 
-const saveEdit = async (id, field, value) => {
-  try {
-    await api.put(`/students/${id}`, {
-      [field]: value,
-    });
-    setEditingCell({ id: null, field: null });
-    fetchStudents();
-  } catch (err) {
-    console.error("Inline update failed:", err);
-    alert("Update failed");
-  }
-};
+  const saveEdit = async (id, field, value) => {
+    try {
+      let payload;
+
+      if (field.includes(".")) {
+        const keys = field.split(".");
+        payload = keys.reduceRight((acc, k) => ({ [k]: acc }), value);
+      } else {
+        payload = { [field]: value };
+      }
+
+      await api.put(`/students/${id}`, payload);
+      setEditingCell({ id: null, field: null });
+      fetchStudents();
+    } catch (err) {
+      console.error("Inline update failed:", err);
+      alert("Update failed");
+    }
+  };
 
   /* ================= FORM ================= */
   const handleChange = (e) => {
@@ -123,30 +135,21 @@ const saveEdit = async (id, field, value) => {
       ? students
       : students.filter((s) => s.year === selectedYear);
 
-
-   /* ================= DELETE STUDENT ================= */
-const deleteStudent = async (id) => {
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete this student?"
-  );
-  if (!confirmDelete) return;
-
-  try {
-    await api.delete(`/students/${id}`);
-    fetchStudents();
-  } catch (err) {
-    console.error("Delete student error:", err);
-    alert("Failed to delete student");
-  }
-};
-
+  /* ================= DELETE ================= */
+  const deleteStudent = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this student?")) return;
+    try {
+      await api.delete(`/students/${id}`);
+      fetchStudents();
+    } catch (err) {
+      console.error("Delete student error:", err);
+      alert("Failed to delete student");
+    }
+  };
 
   /* ================= EXPORT ================= */
   const exportExcel = () => {
-    if (!filteredStudents.length) {
-      alert("No data to export");
-      return;
-    }
+    if (!filteredStudents.length) return alert("No data to export");
 
     const rows = filteredStudents.map((s) => {
       const base = {
@@ -168,10 +171,7 @@ const deleteStudent = async (id) => {
   };
 
   const exportPDF = () => {
-    if (!filteredStudents.length) {
-      alert("No data to export");
-      return;
-    }
+    if (!filteredStudents.length) return alert("No data to export");
 
     const doc = new jsPDF();
     const headers = [
@@ -194,12 +194,7 @@ const deleteStudent = async (id) => {
       ...extraColumns.map((c) => s.extraFields?.[c] || ""),
     ]);
 
-    autoTable(doc, {
-      head: [headers],
-      body,
-      startY: 20,
-    });
-
+    autoTable(doc, { head: [headers], body, startY: 20 });
     doc.save("students.pdf");
   };
 
@@ -232,7 +227,6 @@ const deleteStudent = async (id) => {
     <div className="student-page">
       <h1>🎓 Student Management</h1>
 
-      {/* IMPORT */}
       <div>
         <input
           placeholder="Paste Google Sheet link"
@@ -242,7 +236,6 @@ const deleteStudent = async (id) => {
         <button onClick={importStudents}>➕Import</button>
       </div>
 
-      {/* FILTER */}
       <select
         value={selectedYear}
         onChange={(e) => setSelectedYear(e.target.value)}
@@ -254,17 +247,14 @@ const deleteStudent = async (id) => {
         <option value="4th">4th</option>
       </select>
 
-      {/* EXPORT */}
       <button onClick={exportExcel}>📗Export Excel</button>
       <button onClick={exportPDF}>📄Export PDF</button>
 
-      {/* ADD / DELETE COLUMN */}
       <button onClick={addColumn}>➕ Add Column</button>
       <button onClick={deleteColumn} style={{ color: "red" }}>
         ❌ Delete Column
       </button>
 
-      {/* FORM */}
       <form onSubmit={addStudent} className="student-form">
         <input name="name" placeholder="Name" value={form.name} onChange={handleChange} />
         <input name="rollNo" placeholder="Roll No" value={form.rollNo} onChange={handleChange} />
@@ -285,163 +275,119 @@ const deleteStudent = async (id) => {
         <button type="submit">Add Student</button>
       </form>
 
-     {/* TABLE */}
-{loading ? (
-  <p>Loading...</p>
-) : (
-  <table className="student-table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Department</th>
-        <th>Year</th>
-        {extraColumns.map((c) => (
-          <th key={c}>{c}</th>
-        ))}
-        <th>Action</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {filteredStudents.length === 0 ? (
-        <tr>
-          <td colSpan={5 + extraColumns.length} align="center">
-            No students found
-          </td>
-        </tr>
+      {loading ? (
+        <p>Loading...</p>
       ) : (
-        filteredStudents.map((f) => (
-          <tr key={f._id}>
-            {/* NAME */}
-            <td onDoubleClick={() => startEdit(f._id, "name")}>
-              {editingCell.id === f._id && editingCell.field === "name" ? (
-                <input
-                  autoFocus
-                  defaultValue={f.name}
-                  onBlur={(e) =>
-                    saveEdit(f._id, "name", e.target.value)
-                  }
-                  onKeyDown={(e) =>
-                    e.key === "Enter" &&
-                    saveEdit(f._id, "name", e.target.value)
-                  }
-                />
-              ) : (
-                f.name
-              )}
-            </td>
+        <table className="student-table">
+          <thead>
+            <tr>
+              {BASE_COLUMNS.map((col) => (
+                <th key={col.key}>{col.label}</th>
+              ))}
+              {extraColumns.map((c) => (
+                <th key={c}>{c}</th>
+              ))}
+              <th>Action</th>
+            </tr>
+          </thead>
 
-            {/* EMAIL */}
-            <td onDoubleClick={() => startEdit(f._id, "email")}>
-              {editingCell.id === f._id && editingCell.field === "email" ? (
-                <input
-                  autoFocus
-                  defaultValue={f.email}
-                  onBlur={(e) =>
-                    saveEdit(f._id, "email", e.target.value)
-                  }
-                  onKeyDown={(e) =>
-                    e.key === "Enter" &&
-                    saveEdit(f._id, "email", e.target.value)
-                  }
-                />
-              ) : (
-                f.email
-              )}
-            </td>
+          <tbody>
+            {filteredStudents.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={BASE_COLUMNS.length + extraColumns.length + 1}
+                  align="center"
+                >
+                  No students found
+                </td>
+              </tr>
+            ) : (
+              filteredStudents.map((student) => (
+                <tr key={student._id}>
+                  {BASE_COLUMNS.map((col) => (
+                    <td
+                      key={col.key}
+                      onDoubleClick={() =>
+                        startEdit(student._id, col.key)
+                      }
+                    >
+                      {editingCell.id === student._id &&
+                      editingCell.field === col.key ? (
+                        <input
+                          autoFocus
+                          defaultValue={student[col.key] || ""}
+                          onBlur={(e) =>
+                            saveEdit(
+                              student._id,
+                              col.key,
+                              e.target.value
+                            )
+                          }
+                          onKeyDown={(e) =>
+                            e.key === "Enter" &&
+                            saveEdit(
+                              student._id,
+                              col.key,
+                              e.target.value
+                            )
+                          }
+                        />
+                      ) : (
+                        student[col.key] || "—"
+                      )}
+                    </td>
+                  ))}
 
-            {/* DEPARTMENT */}
-            <td onDoubleClick={() => startEdit(f._id, "department")}>
-              {editingCell.id === f._id &&
-              editingCell.field === "department" ? (
-                <input
-                  autoFocus
-                  defaultValue={f.department}
-                  onBlur={(e) =>
-                    saveEdit(f._id, "department", e.target.value)
-                  }
-                  onKeyDown={(e) =>
-                    e.key === "Enter" &&
-                    saveEdit(f._id, "department", e.target.value)
-                  }
-                />
-              ) : (
-                f.department
-              )}
-            </td>
+                  {extraColumns.map((c) => (
+                    <td
+                      key={c}
+                      onDoubleClick={() =>
+                        startEdit(student._id, `extraFields.${c}`)
+                      }
+                    >
+                      {editingCell.id === student._id &&
+                      editingCell.field === `extraFields.${c}` ? (
+                        <input
+                          autoFocus
+                          defaultValue={student.extraFields?.[c] || ""}
+                          onBlur={(e) =>
+                            saveEdit(
+                              student._id,
+                              `extraFields.${c}`,
+                              e.target.value
+                            )
+                          }
+                          onKeyDown={(e) =>
+                            e.key === "Enter" &&
+                            saveEdit(
+                              student._id,
+                              `extraFields.${c}`,
+                              e.target.value
+                            )
+                          }
+                        />
+                      ) : (
+                        student.extraFields?.[c] || "—"
+                      )}
+                    </td>
+                  ))}
 
-            {/* YEAR */}
-            <td onDoubleClick={() => startEdit(f._id, "year")}>
-              {editingCell.id === f._id &&
-              editingCell.field === "year" ? (
-                <input
-                  autoFocus
-                  defaultValue={f.year}
-                  onBlur={(e) =>
-                    saveEdit(f._id, "year", e.target.value)
-                  }
-                  onKeyDown={(e) =>
-                    e.key === "Enter" &&
-                    saveEdit(f._id, "year", e.target.value)
-                  }
-                />
-              ) : (
-                f.year
-              )}
-            </td>
-
-            {/* EXTRA COLUMNS */}
-            {extraColumns.map((c) => (
-              <td
-                key={c}
-                onDoubleClick={() =>
-                  startEdit(f._id, `extraFields.${c}`)
-                }
-              >
-                {editingCell.id === f._id &&
-                editingCell.field === `extraFields.${c}` ? (
-                  <input
-                    autoFocus
-                    defaultValue={f.extraFields?.[c] || ""}
-                    onBlur={(e) =>
-                      saveEdit(
-                        f._id,
-                        `extraFields.${c}`,
-                        e.target.value
-                      )
-                    }
-                    onKeyDown={(e) =>
-                      e.key === "Enter" &&
-                      saveEdit(
-                        f._id,
-                        `extraFields.${c}`,
-                        e.target.value
-                      )
-                    }
-                  />
-                ) : (
-                  f.extraFields?.[c] || "—"
-                )}
-              </td>
-            ))}
-
-            {/* DELETE */}
-            <td>
-              <button
-                className="delete-btn"
-                onClick={() => deleteStudent(f._id)}
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))
+                  <td>
+                    <button
+                      className="delete-btn"
+                      onClick={() => deleteStudent(student._id)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       )}
-    </tbody>
-  </table>
-)}
     </div>
   );
-} 
+}
+
 export default Student;

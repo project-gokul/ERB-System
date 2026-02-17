@@ -1,229 +1,400 @@
+/* ================= ROOT LAYOUT ================= */
 .faculty-layout {
-  display:flex;
-  width: 18%;
+  display: flex;
   min-height: 100vh;
-  background: #121212;
-  color: white;
-}
-/* ================= SUBJECT GRID ================= */
-.subject-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
-  margin-top: 15px;
-  padding: 0;
-  list-style: none;
-}
-.subject-item {
-  background: #242424;
-  padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.subject-item strong {
-  font-size: 16px;
+  background: #0f172a;
   color: #ffffff;
+  font-family: "Segoe UI", sans-serif;
 }
-.subject-item input {
-  width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #1b1b1b;
-  color: #fff;
+
+/* ================= GLOBAL TRANSITION ================= */
+* {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              transform 0.3s ease,
+              box-shadow 0.3s ease;
 }
-.action-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 5px;
-}
-.subject-item .add-link-btn {
-  background: #2e7d32;
-  color: white;
-  border: none;
-  padding: 7px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.subject-item .delete-btn {
-  background: #e53935;
-  color: white;
-  border: none;
-  padding: 7px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-/* ===== SIDEBAR ===== */
+
+/* ================= SIDEBAR ================= */
 .sidebar {
-  width: 240px;               /* 🔥 FIXED WIDTH */
-  background: #111;
-  padding: 20px;
+  width: 240px;
+  background: linear-gradient(180deg, #020617, #020617);
+  padding: 25px 18px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.5);
+  gap: 14px;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6);
 }
 
 .logo {
-  margin-bottom: 30px;
   text-align: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: #38bdf8;
 }
 
+/* ================= MENU ITEMS ================= */
 .menu-item {
-  padding: 12px;
-  margin-bottom: 10px;
+  position: relative;
   text-decoration: none;
-  color: white;
-  border-radius: 6px;
-  transition: 0.3s;
+  color: #cbd5f5;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 15px;
+  overflow: hidden;
 }
 
-.menu-item:hover,
+.menu-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.menu-item:hover::before {
+  opacity: 1;
+}
+
+.menu-item:hover {
+  color: #fff;
+  transform: translateX(6px);
+}
+
 .menu-item.active {
-  background: #4caf50;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  color: #fff;
+  font-weight: 600;
 }
 
+/* ================= BADGE ================= */
+.badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-left: 8px;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* ================= LOGOUT ================= */
 .logout-btn {
   margin-top: auto;
-  padding: 10px;
-  background: #e53935;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   border: none;
-  color: white;
-  border-radius: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
   cursor: pointer;
 }
 
-/* ===== CONTENT ===== */
-.content {
-  flex: 1;
-  padding: 30px;
+.logout-btn:hover {
+  transform: scale(1.05);
 }
 
-.info-card {
-  background: #1f1f1f;
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
+/* ================= MAIN CONTENT ================= */
+.content {
+  flex: 1;
+  padding: 35px 45px;
+}
+
+.content h1 {
+  font-size: 28px;
   margin-bottom: 20px;
 }
 
-.student-btn {
-  padding: 12px 18px;
-  background: #2196f3;
-  border: none;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
+/* ================= INFO CARD ================= */
+.info-card {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 20px 24px;
+  border-radius: 14px;
+  max-width: 420px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
 }
-/* ================= INPUT SECTION ================= */
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+}
+
+.info-card p {
+  margin: 6px 0;
+  color: #e5e7eb;
+}
+
+/* ================= NOTIFICATIONS ================= */
+.notification-card {
+  background: #020617;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.notification-card:hover {
+  transform: translateY(-6px);
+}
+
+.notification-item {
+  background: #020617;
+  border-left: 4px solid #38bdf8;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  animation: fadeSlideIn 0.4s ease;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notification-item p {
+  margin: 0;
+}
+
+.notification-item small {
+  color: #94a3b8;
+}
+
+.view-link {
+  display: inline-block;
+  margin-top: 6px;
+  color: #38bdf8;
+  text-decoration: none;
+}
+
+/* ================= SUBJECT CARD ================= */
+.subject-card {
+  background: #020617;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+}
+
+.subject-card:hover {
+  transform: translateY(-6px);
+}
+
+/* ================= INPUT ROW ================= */
 .subject-input {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 12px;
+  margin-bottom: 25px;
 }
 
 .subject-input input {
   flex: 1;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #2b2b2b;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #020617;
   color: #fff;
+  outline: none;
 }
 
-.subject-input input::placeholder {
-  color: #aaa;
+.subject-input input:focus {
+  box-shadow: 0 0 0 2px rgba(56,189,248,0.5);
 }
 
 .subject-input button {
-  background: #6a5acd;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
   border: none;
-  padding: 8px 14px;
-  color: white;
-  border-radius: 6px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .subject-input button:hover {
-  background: #5a4bb7;
+  transform: scale(1.05);
 }
+
+/* ================= SUBJECT LIST ================= */
 .subject-list {
   list-style: none;
   padding: 0;
-  margin-top: 10px;
-}
-
-.subject-item,
-.subject-list li {
-  background: #2a2a2a;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 18px;
 }
 
-/* subject name */
+.subject-list li {
+  background: #020617;
+  padding: 18px;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.subject-list li:hover {
+  transform: translateY(-4px);
+}
+
 .subject-list strong {
-  color: #fff;
-  font-size: 15px;
+  font-size: 17px;
 }
 
-/* ================= LINK INPUT ================= */
 .subject-list input {
-  padding: 7px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: #1f1f1f;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #0f172a;
   color: #fff;
 }
 
-/* ================= BUTTON ROW ================= */
 .subject-list button {
-  width: fit-content;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-/* Add link */
-.subject-list button:first-of-type {
-  background: #3cb371;
-  color: white;
-}
-
-.subject-list button:first-of-type:hover {
-  background: #2fa866;
-}
-
-/* Delete button */
-.delete-btn {
-  background: #ff4d4d !important;
-  color: white;
-}
-
-.delete-btn:hover {
-  background: #e63939 !important;
-}
-
-/* ================= VIEW MATERIAL BUTTON ================= */
-.student-btn {
-  margin-top: 15px;
-  background: #1e90ff;
-  color: white;
-  border: none;
-  padding: 10px 16px;
+  margin-top: 10px;
+  margin-right: 10px;
+  padding: 8px 14px;
   border-radius: 8px;
+  border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-weight: 600;
+}
+
+.subject-list button:first-of-type {
+  background: #22c55e;
+  color: #000;
+}
+
+.delete-btn {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* ================= BOTTOM BUTTON ================= */
+.student-btn {
+  margin-top: 30px;
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  border: none;
+  padding: 14px 22px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .student-btn:hover {
-  background: #187bdb;
+  transform: translateY(-3px) scale(1.05);
+}
+
+/* ================================================= */
+/* ================= MEDIA QUERIES ================= */
+/* ================================================= */
+
+/* 📱 MOBILE */
+@media (max-width: 600px) {
+  .faculty-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 12px;
+  }
+
+  .logo {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .menu-item {
+    flex: 1 1 45%;
+    text-align: center;
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .logout-btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .content h1 {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  .info-card,
+  .notification-card,
+  .subject-card {
+    max-width: 100%;
+    padding: 18px;
+  }
+
+  .subject-input {
+    flex-direction: column;
+  }
+
+  .subject-input button {
+    width: 100%;
+  }
+
+  .student-btn {
+    width: 100%;
+  }
+}
+
+/* 📟 TABLET */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .content {
+    padding: 25px;
+  }
+
+  .subject-input {
+    flex-direction: column;
+  }
+
+  .subject-input button {
+    width: 100%;
+  }
+}
+
+/* 💻 SMALL LAPTOP */
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 220px;
+  }
+
+  .content {
+    padding: 30px;
+  }
+}
+.material-buttons {
+  display: flex;
+  gap: 15px;           /* 👈 space between buttons */
+  margin-top: 20px;
+  flex-wrap: wrap;     /* optional: wraps on small screens */
 }

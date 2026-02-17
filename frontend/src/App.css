@@ -40,4 +40,71 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}@media (max-width: 600px) {
+  /* Layout */
+  .faculty-layout {
+    flex-direction: column;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 12px;
+  }
+
+  .logo {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .menu-item {
+    flex: 1 1 45%;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .logout-btn {
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  /* Content */
+  .content {
+    padding: 20px;
+  }
+
+  .content h1 {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  /* Info card */
+  .info-card {
+    max-width: 100%;
+  }
+
+  /* Subject input */
+  .subject-input {
+    flex-direction: column;
+  }
+
+  .subject-input button {
+    width: 100%;
+  }
+
+  /* Subject cards */
+  .subject-list li {
+    padding: 14px;
+  }
+
+  /* Bottom button */
+  .student-btn {
+    width: 100%;
+    text-align: center;
+  }
 }

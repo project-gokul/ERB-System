@@ -1,0 +1,156 @@
+/* ===== CONTAINER ===== */
+.cert-container {
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 24px;
+  background: #1e1e1e;
+  border-radius: 12px;
+  color: #fff;
+}
+
+/* ===== FORM ===== */
+.upload-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.upload-form input,
+.upload-form button {
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+}
+
+.upload-form input[type="text"] {
+  flex: 1;
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.upload-form button {
+  background: #4f46e5;
+  color: white;
+  cursor: pointer;
+}
+
+/* ===== LIST ===== */
+.cert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cert-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2a2a2a;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+/* ===== INFO ===== */
+.cert-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  font-size: 22px;
+}
+
+.title {
+  font-size: 15px;
+}
+
+/* ===== ACTIONS ===== */
+.actions button {
+  margin-left: 8px;
+  padding: 6px 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.actions button:first-child {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.actions .delete {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: #1e1e1e;
+  padding: 20px;
+  width: 90%;
+  max-width: 600px;
+  border-radius: 10px;
+}
+
+.modal iframe {
+  width: 100%;
+  height: 400px;
+  border: none;
+}
+
+.modal img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+.modal button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  background: #4f46e5;
+  border: none;
+  color: white;
+  border-radius: 6px;
+}
+
+/* ===== ANIMATION ===== */
+.fade-slide {
+  animation: fadeSlide 0.4s ease-in-out;
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  .cert-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    margin-top: 10px;
+  }
+}
