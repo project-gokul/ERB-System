@@ -1,8 +1,12 @@
 import axios from "axios";
 
+// 🔥 Always define API base URL clearly
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
-  withCredentials: false,
+  baseURL: API_BASE_URL,
+  withCredentials: true, // safer if you ever use cookies
   timeout: 15000,
 });
 
@@ -11,17 +15,10 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
 
-    // ✅ Attach JWT token
+    // Attach JWT token if exists
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    /**
-     * ❌ DO NOT set Content-Type manually
-     * Axios will automatically set:
-     * - application/json for JSON
-     * - multipart/form-data for FormData
-     */
 
     return config;
   },
@@ -32,7 +29,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+
+    if (status === 401) {
       console.warn("Session expired. Logging out...");
 
       localStorage.removeItem("token");
@@ -44,7 +43,7 @@ api.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 403) {
+    if (status === 403) {
       alert("You do not have permission to perform this action.");
     }
 
