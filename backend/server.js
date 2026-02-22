@@ -13,14 +13,28 @@ const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
-// ================= MIDDLEWARE =================
+// ================= CORS CONFIG =================
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://deptsystem.vercel.app" // ⚠️ PUT YOUR EXACT VERCEL URL HERE
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
-    credentials: true,
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true
   })
 );
 
+// ================= MIDDLEWARE =================
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
@@ -36,19 +50,21 @@ app.use("/api/notifications", notificationRoutes);
 app.get("/", (req, res) => {
   res.json({
     message: "Backend & MongoDB are running 🚀",
-    status: "OK",
+    status: "OK"
   });
 });
 
-// ================= SERVER =================
+// ================= DATABASE & SERVER =================
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected ✅");
+
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () =>
-      console.log(`Server running on http://localhost:${PORT}`)
-    );
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("MongoDB Error ❌", err);
