@@ -5,6 +5,11 @@
   box-sizing: border-box;
 }
 
+body {
+  overflow-x: hidden;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
 /* ================= THEME VARIABLES ================= */
 :root {
   --primary: #2563eb;
@@ -25,40 +30,37 @@
 /* ================= CONTAINER ================= */
 .container {
   display: flex;
-  min-height: 100vh;
-  font-family: "Segoe UI", Arial, sans-serif;
+  height: 100vh;            /* 🔥 Fixed height for stability */
+  overflow: hidden;         /* 🔥 Prevent resize jump */
   background: var(--bg);
   color: var(--text);
-  transition: 0.3s;
+  transition: 0.3s ease;
 }
 
 /* ================= SIDEBAR ================= */
 .sidebar {
   width: 260px;
+  height: 100vh;            /* 🔥 Lock sidebar height */
+  flex-shrink: 0;           /* 🔥 Prevent shrinking */
   background: linear-gradient(180deg, #0f172a, #1e293b);
   color: var(--sidebar-text);
   padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 20px;               /* ✅ spacing between logo & buttons */
-  animation: slideInLeft 0.6s ease;
-  transition: width 0.3s;
+  gap: 20px;
+  transition: 0.3s ease;
 }
 
-
-/* Collapsed Sidebar */
 .sidebar.collapsed {
   width: 80px;
 }
 
-/* Top Section */
 .top {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
 }
 
-/* Logo */
 .logo {
   font-size: 20px;
   font-weight: bold;
@@ -72,10 +74,6 @@
   gap: 8px;
 }
 
-
-
-
-/* Menu Buttons */
 .sidebar nav button {
   display: flex;
   align-items: center;
@@ -87,21 +85,18 @@
   font-size: 15px;
   cursor: pointer;
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: 0.3s ease;
 }
 
-/* Hover */
 .sidebar nav button:hover {
   background: rgba(255, 255, 255, 0.12);
   transform: translateX(6px);
 }
 
-/* Active Menu */
 .sidebar nav button.active {
   background: var(--primary);
 }
 
-/* Icon Button (Menu + Theme) */
 .icon-btn {
   background: none;
   border: none;
@@ -123,7 +118,7 @@
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s, background 0.3s;
+  transition: 0.3s ease;
 }
 
 .theme-toggle:hover {
@@ -134,114 +129,87 @@
 .container.dark .theme-toggle {
   background: var(--primary);
 }
+
 /* ================= HERO ================= */
 .hero {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 80px;
-  animation: fadeUp 0.7s ease;
+  align-items: center;       /* 🔥 Vertical center */
+  justify-content: center;   /* 🔥 Horizontal center */
+  text-align: center;
+  padding: 60px;
+  height: 100%;
 }
 
-/* Hero Text */
+.hero-content {
+  max-width: 700px;
+}
+
 .hero h1 {
   font-size: 42px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .hero p {
   font-size: 18px;
   color: #64748b;
-  max-width: 520px;
   line-height: 1.6;
-}
-
-/* ================= ANIMATIONS ================= */
-@keyframes slideInLeft {
-  from {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeUp {
-  from {
-    transform: translateY(40px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
 }
 
 /* ================= RESPONSIVE ================= */
 
-/* Tablets */
+/* Tablet */
 @media (max-width: 1024px) {
-  .hero {
-    padding: 50px;
+  .sidebar {
+    width: 220px;
   }
 
   .hero h1 {
     font-size: 34px;
   }
+
+  .hero p {
+    font-size: 16px;
+  }
 }
 
 /* Mobile */
 @media (max-width: 768px) {
+
   .container {
     flex-direction: column;
+    height: 100vh;          /* 🔥 Allow stacking */
+     
   }
 
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-  }
 
-  .sidebar.collapsed {
-    width: 100%;
-  }
-
-  .sidebar nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .sidebar nav button {
-    flex: 1 1 45%;
-    justify-content: center;
-  }
-
+  
   .hero {
-    padding: 40px 25px;
-    text-align: center;
+    padding: 40px 20px;
   }
 
-  .hero p {
-    margin: auto;
-  }
-}
-
-/* Small Mobiles */
-@media (max-width: 480px) {
   .hero h1 {
-    font-size: 26px;
+    font-size: 28px;
   }
 
   .hero p {
     font-size: 15px;
   }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+
+  .hero h1 {
+    font-size: 22px;
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
 
   .sidebar nav button {
-    flex: 1 1 100%;
+    font-size: 13px;
+    padding: 8px;
   }
 }

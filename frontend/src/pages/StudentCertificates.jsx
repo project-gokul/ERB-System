@@ -15,15 +15,21 @@ function StudentCertificates() {
   const [preview, setPreview] = useState(null);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   // ================= LOAD CERTIFICATES =================
   useEffect(() => {
     const loadCertificates = async () => {
       try {
-        const res = await api.get("/certificates/my");
-        setCertificates(res.data);
+        setLoading(true);
+        const res = await api.get("/certificates/my"); // ✅ CORRECT ROUTE
+        console.log("Student certs:", res.data); // DEBUG
+        setCertificates(res.data || []);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load certificates", err);
+        setCertificates([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -33,7 +39,7 @@ function StudentCertificates() {
   // ================= UPLOAD =================
   const uploadCertificate = async (e) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !title) return;
 
     try {
       const formData = new FormData();
@@ -45,11 +51,11 @@ function StudentCertificates() {
       setTitle("");
       setFile(null);
 
-      const res = await api.get("/certificates/my");
-      setCertificates(res.data);
+      const res = await api.get("/certificates/my"); // ✅ FIXED
+      setCertificates(res.data || []);
       setPage(1);
     } catch (err) {
-      console.error(err);
+      console.error("Upload failed", err);
     }
   };
 
@@ -62,7 +68,7 @@ function StudentCertificates() {
       await api.delete(`/certificates/${id}`);
       setCertificates((prev) => prev.filter((c) => c._id !== id));
     } catch (err) {
-      console.error(err);
+      console.error("Delete failed", err);
     }
   };
 
@@ -73,7 +79,7 @@ function StudentCertificates() {
   };
 
   // ================= HELPERS =================
-  const isPDF = (url) => url.toLowerCase().endsWith(".pdf");
+  const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
   // ================= SEARCH + PAGINATION =================
   const filtered = certificates.filter((c) =>
@@ -90,7 +96,6 @@ function StudentCertificates() {
     <div className="cert-container">
       <h2>Upload Certificate</h2>
 
-      {/* DRAG & DROP */}
       <div
         className="drop-zone"
         onDragOver={(e) => e.preventDefault()}
@@ -130,7 +135,9 @@ function StudentCertificates() {
         }}
       />
 
-      {paginated.length === 0 && (
+      {loading && <p className="empty">Loading certificates...</p>}
+
+      {!loading && paginated.length === 0 && (
         <p className="empty">No certificates found</p>
       )}
 
@@ -138,18 +145,22 @@ function StudentCertificates() {
         {paginated.map((c) => (
           <div key={c._id} className="cert-card fade-slide">
             <div className="cert-info">
-              <span className="icon">{isPDF(c.fileUrl) ? "📄" : "🖼️"}</span>
+              <span className="icon">
+                {isPDF(c.fileUrl) ? "📄" : "🖼️"}  {/* ✅ FIXED */}
+              </span>
               <span className="title">{c.title}</span>
             </div>
 
-            {/* STATUS BADGE */}
-            <span className={`status ${c.status}`}>
-              {c.status?.toUpperCase() || "PENDING"}
+            <span className={`status ${c.status || "pending"}`}>
+              {(c.status || "pending").toUpperCase()}
             </span>
 
             <div className="actions">
               <button onClick={() => setPreview(c)}>Preview</button>
-              <button className="delete" onClick={() => deleteCertificate(c._id)}>
+              <button
+                className="delete"
+                onClick={() => deleteCertificate(c._id)}
+              >
                 Delete
               </button>
             </div>
@@ -157,7 +168,6 @@ function StudentCertificates() {
         ))}
       </div>
 
-      {/* PAGINATION */}
       {totalPages > 1 && (
         <div className="pagination">
           <button disabled={page === 1} onClick={() => setPage(page - 1)}>
@@ -181,7 +191,7 @@ function StudentCertificates() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h4>{preview.title}</h4>
 
-            {isPDF(preview.fileUrl) ? (
+            {isPDF(preview.fileUrl) ? (   // ✅ FIXED
               <iframe
                 src={`${BACKEND_URL}${preview.fileUrl}`}
                 title="PDF Preview"

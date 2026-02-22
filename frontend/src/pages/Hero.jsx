@@ -15,7 +15,12 @@ function Hero() {
 
   const [collapsed, setCollapsed] = useState(false);
   const [dark, setDark] = useState(false);
-  const [active, setActive] = useState("HOD");
+  const [active, setActive] = useState("");
+
+  const handleNavigate = (role, path) => {
+    setActive(role);
+    navigate(path);
+  };
 
   return (
     <div className={`container ${dark ? "dark" : ""}`}>
@@ -25,7 +30,11 @@ function Hero() {
 
         {/* Top Section */}
         <div className="top">
-          <button className="icon-btn" onClick={() => setCollapsed(!collapsed)}>
+          <button
+            className="icon-btn"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label="Toggle Sidebar"
+          >
             <Menu />
           </button>
 
@@ -36,10 +45,7 @@ function Hero() {
         <nav>
           <button
             className={active === "HOD" ? "active" : ""}
-            onClick={() => {
-              setActive("HOD");
-              navigate("/Login");
-            }}
+            onClick={() => handleNavigate("HOD", "/login")}
           >
             <GraduationCap />
             {!collapsed && <span>HOD Login</span>}
@@ -47,10 +53,7 @@ function Hero() {
 
           <button
             className={active === "Faculty" ? "active" : ""}
-            onClick={() => {
-              setActive("Faculty");
-              navigate("/faculty/login");
-            }}
+            onClick={() => handleNavigate("Faculty", "/faculty/login")}
           >
             <Users />
             {!collapsed && <span>Faculty Login</span>}
@@ -58,10 +61,7 @@ function Hero() {
 
           <button
             className={active === "Student" ? "active" : ""}
-            onClick={() => {
-              setActive("Student");
-              navigate("/student/login");
-            }}
+            onClick={() => handleNavigate("Student", "/student/login")}
           >
             <User />
             {!collapsed && <span>Student Login</span>}
@@ -69,7 +69,7 @@ function Hero() {
         </nav>
       </aside>
 
-      {/* ================= TOP RIGHT THEME TOGGLE ================= */}
+      {/* ================= THEME TOGGLE ================= */}
       <button
         className="theme-toggle"
         onClick={() => setDark(!dark)}
@@ -79,14 +79,14 @@ function Hero() {
       </button>
 
       {/* ================= HERO ================= */}
-      <main className="hero">
-        <h1>Welcome to ERB Management System</h1>
-        <p>
-          A complete platform to manage students, faculty, and academic records
-          efficiently.
-        </p>
-      </main>
-
+     <main className="hero">
+  <div>
+    <h1>Welcome to ERB Management System</h1>
+    <p>
+      A complete platform to manage students, faculty, and academic records efficiently.
+    </p>
+  </div>
+</main>
     </div>
   );
 }

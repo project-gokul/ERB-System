@@ -1,21 +1,50 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 
+// 🔥 Ensure folder exists automatically
+const uploadPath = path.join(__dirname, "..", "uploads", "certificates");
+
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+// ================= STORAGE =================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/certificates");
+    cb(null, uploadPath);
   },
+
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    const uniqueName =
+      Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueName + path.extname(file.originalname));
   },
 });
 
+// ================= FILE FILTER =================
 const fileFilter = (req, file, cb) => {
-  const allowed = /pdf|jpg|jpeg|png/;
-  const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+  const allowedTypes = [
+    "application/pdf",
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+  ];
 
-  if (ext) cb(null, true);
-  else cb(new Error("Only PDF, JPG, PNG allowed"));
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only PDF, JPG, JPEG, PNG files are allowed"));
+  }
 };
 
-module.exports = multer({ storage, fileFilter });
+// ================= MULTER EXPORT =================
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 🔥 5MB limit
+  },
+});
+
+module.exports = upload;

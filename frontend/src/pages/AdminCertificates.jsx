@@ -2,18 +2,51 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./AdminCertificates.css";
 
+const BACKEND_URL = "http://localhost:5000";
+
 function AdminCertificates() {
   const [certs, setCerts] = useState([]);
 
+  // ================= LOAD CERTIFICATES =================
   useEffect(() => {
-    api.get("/certificates/admin/all").then((res) => setCerts(res.data));
+    api
+      .get("/certificates/admin/all")
+      .then((res) => {
+        console.log("Admin Certificates:", res.data); // 🔥 DEBUG
+        setCerts(res.data || []);
+      })
+      .catch((err) => console.error(err));
   }, []);
 
+  // ================= UPDATE STATUS =================
   const updateStatus = async (id, status) => {
-    await api.patch(`/certificates/admin/${id}/status`, { status });
-    setCerts(
-      certs.map((c) => (c._id === id ? { ...c, status } : c))
-    );
+    try {
+      await api.patch(`/certificates/admin/${id}/status`, { status });
+
+      if (status === "rejected") {
+        setCerts((prev) => prev.filter((c) => c._id !== id));
+      } else {
+        setCerts((prev) =>
+          prev.map((c) =>
+            c._id === id ? { ...c, status } : c
+          )
+        );
+      }
+    } catch (err) {
+      console.error("Status update failed:", err);
+    }
+  };
+
+  // ================= PREVIEW =================
+  const handlePreview = (cert) => {
+    console.log("Preview clicked:", cert); // 🔥 DEBUG
+
+    if (!cert.fileUrl) {   // ✅ FIXED HERE
+      alert("No certificate uploaded");
+      return;
+    }
+
+    window.open(`${BACKEND_URL}${cert.fileUrl}`, "_blank");
   };
 
   return (
@@ -28,13 +61,22 @@ function AdminCertificates() {
             <div key={c._id} className="certificate-card">
               <div className="cert-info">
                 <h3 className="cert-title">{c.title}</h3>
-                <p className="cert-email">👨‍🎓 {c.studentId.email}</p>
+                <p className="cert-email">
+                  👨‍🎓 {c.studentId?.email}
+                </p>
               </div>
 
               <div className="cert-actions">
                 <span className={`status ${c.status}`}>
-                  {c.status.toUpperCase()}
+                  {c.status?.toUpperCase()}
                 </span>
+
+                <button
+                  className="preview-btn"
+                  onClick={() => handlePreview(c)}
+                >
+                  👁 Preview
+                </button>
 
                 <button
                   className="approve-btn"
