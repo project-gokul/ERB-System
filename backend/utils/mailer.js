@@ -32,4 +32,4 @@ const sendMail = async (to, resetLink) => {
   }
 };
 
-module.exports = mailer;
+module.exports = sendMail;
