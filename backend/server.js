@@ -6,7 +6,7 @@ require("dotenv").config();
 
 // ================= CHECK ENV =================
 if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI missing in .env file");
+  console.error("❌ MONGO_URI missing in environment variables");
   process.exit(1);
 }
 
@@ -21,18 +21,30 @@ const chatRoutes = require("./routes/chatRoutes");
 // ================= INIT APP =================
 const app = express();
 
-// ================= MIDDLEWARE =================
+// ================= CORS CONFIG =================
+const allowedOrigins = [
+  "http://localhost:5173", // local frontend
+  process.env.FRONTEND_URL // production frontend (Vercel)
+];
+
 app.use(
   cors({
-    origin: "http://localhost:5173", // your Vite frontend
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed"));
+      }
+    },
     credentials: true,
   })
 );
 
+// ================= BODY PARSER =================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Serve uploaded files
+// ================= STATIC FILES =================
 app.use("/uploads", express.static("uploads"));
 
 // ================= ROUTES =================
@@ -42,6 +54,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/chat", chatRoutes);
+
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -50,21 +63,13 @@ app.get("/", (req, res) => {
   });
 });
 
-/*
-MongoDB readyState:
-0 = disconnected
-1 = connected
-2 = connecting
-3 = disconnecting
-*/
-
 // ================= GLOBAL ERROR HANDLER =================
 app.use((err, req, res, next) => {
   console.error("❌ Server Error:", err.stack);
   res.status(500).json({ message: "Internal Server Error" });
 });
 
-// ================= CONNECT MONGODB + START SERVER =================
+// ================= CONNECT DB + START SERVER =================
 mongoose
   .connect(process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 10000,
@@ -75,7 +80,7 @@ mongoose
     const PORT = process.env.PORT || 5000;
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
   })
   .catch((err) => {
