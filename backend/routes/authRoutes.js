@@ -15,9 +15,16 @@ const sendMail = require("../utils/mailer");
 ===================================================== */
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, department, role } = req.body;
+    console.log("🔥 REGISTER HIT:", req.body);
 
-    if (!name || !email || !password || !department || !role) {
+    let { name, email, password, department, role } = req.body;
+
+    // If role not sent, default to HOD
+    if (!role) {
+      role = "HOD";
+    }
+
+    if (!name || !email || !password || !department) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
