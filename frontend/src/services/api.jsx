@@ -1,9 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
-  withCredentials: true, // ✅ IMPORTANT for CORS + cookies
-  timeout: 10000,        // ✅ Prevent infinite waiting
+  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+  withCredentials: true,
+  timeout: 10000,
 });
 
 // ================= REQUEST INTERCEPTOR =================
@@ -11,7 +11,6 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
 
-    // Attach token only if exists
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -25,7 +24,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 🔐 Auto logout if token expired / invalid
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
