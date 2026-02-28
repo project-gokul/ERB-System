@@ -99,12 +99,12 @@ router.post("/forgot-password", async (req, res) => {
     console.log("📩 Forgot password hit");
 
     const { email } = req.body;
-    if (!email) return res.status(400).json({ message: "Email is required" });
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
 
-    // 🔍 Check in User collection
     let account = await User.findOne({ email });
 
-    // 🔍 If not found, check Student collection
     if (!account) {
       account = await Student.findOne({ email });
     }
@@ -119,10 +119,14 @@ router.post("/forgot-password", async (req, res) => {
     account.resetTokenExpiry = Date.now() + 10 * 60 * 1000;
     await account.save();
 
-    const resetLink = `http://localhost:5173/reset-password/${token}`;
+    // ✅ USE FRONTEND_URL from environment
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+
     await sendMail(account.email, resetLink);
 
-    res.json({ message: "Reset link sent to email ✅" });
+    res.status(200).json({
+      message: "Reset link sent to email ✅",
+    });
   } catch (error) {
     console.error("FORGOT PASSWORD ERROR:", error);
     res.status(500).json({ message: "Server error ❌" });
@@ -136,21 +140,35 @@ router.post("/reset-password/:token", async (req, res) => {
   try {
     const { password } = req.body;
 
-    const user = await User.findOne({
-      resetToken: req.params.token,
-      resetTokenExpiry: { $gt: Date.now() },
-    });
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const user =
+      (await User.findOne({
+        resetToken: req.params.token,
+        resetTokenExpiry: { $gt: Date.now() },
+      })) ||
+      (await Student.findOne({
+        resetToken: req.params.token,
+        resetTokenExpiry: { $gt: Date.now() },
+      }));
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
+      return res.status(400).json({
+        message: "Invalid or expired token",
+      });
     }
 
     user.password = await bcrypt.hash(password, 10);
     user.resetToken = null;
     user.resetTokenExpiry = null;
+
     await user.save();
 
-    res.status(200).json({ message: "Password reset successful ✅" });
+    res.status(200).json({
+      message: "Password reset successful ✅",
+    });
   } catch (error) {
     console.error("RESET PASSWORD ERROR:", error);
     res.status(500).json({ message: "Server error ❌" });
