@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 const authMiddleware = require("../middleware/authMiddleware");
-const sendMail = require("../utils/mailer");
+const sendMail = require("./utils/mailer");
 
 /* =====================================================
    REGISTER API
@@ -103,9 +103,8 @@ router.post("/login", async (req, res) => {
 ===================================================== */
 router.post("/forgot-password", async (req, res) => {
   try {
-    console.log("📩 Forgot password hit");
-
     const { email } = req.body;
+
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
@@ -124,9 +123,9 @@ router.post("/forgot-password", async (req, res) => {
 
     account.resetToken = token;
     account.resetTokenExpiry = Date.now() + 10 * 60 * 1000;
+
     await account.save();
 
-    // ✅ USE FRONTEND_URL from environment
     const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
 
     await sendMail(account.email, resetLink);
