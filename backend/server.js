@@ -22,20 +22,9 @@ const chatRoutes = require("./routes/chatRoutes");
 const app = express();
 
 // ================= CORS CONFIG =================
-const allowedOrigins = [
-  "http://localhost:5173", // local frontend
-  process.env.FRONTEND_URL // production frontend (Vercel)
-];
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS not allowed"));
-      }
-    },
+    origin: true, // allow all origins dynamically
     credentials: true,
   })
 );
