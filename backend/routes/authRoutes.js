@@ -8,7 +8,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 const authMiddleware = require("../middleware/authMiddleware");
-const sendMail = require("./utils/mailer");
+const sendMail = require("../utils/mailer");
 
 /* =====================================================
    REGISTER API
