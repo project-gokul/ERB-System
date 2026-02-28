@@ -11,7 +11,7 @@ if (!BASE_URL) {
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
   withCredentials: true,
-  timeout: 60000, // ⬆ Increased to 60 seconds (Render free plan safe)
+  timeout: 10000, // ⬆ Increased to 60 seconds (Render free plan safe)
   headers: {
     "Content-Type": "application/json",
   },
