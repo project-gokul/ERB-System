@@ -11,6 +11,7 @@ function Sidebar() {
         <li>🎓 Students</li>
         <li>📁 Reports</li>
         <li>⚙️ Settings</li>
+        <li> ChatBhot</li>
       </ul>
     </div>
   );

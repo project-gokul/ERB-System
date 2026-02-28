@@ -1,13 +1,9 @@
 import axios from "axios";
 
-// 🔥 Always define API base URL clearly
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://dept-system-mph4.onrender.com/api";
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
-  withCredentials: true, // safer if you ever use cookies
-  timeout: 15000,
+  baseURL: "http://localhost:5000/api",
+  withCredentials: true, // ✅ IMPORTANT for CORS + cookies
+  timeout: 10000,        // ✅ Prevent infinite waiting
 });
 
 // ================= REQUEST INTERCEPTOR =================
@@ -15,7 +11,7 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
 
-    // Attach JWT token if exists
+    // Attach token only if exists
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,22 +25,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const status = error.response?.status;
-
-    if (status === 401) {
-      console.warn("Session expired. Logging out...");
-
+    // 🔐 Auto logout if token expired / invalid
+    if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("role");
-
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
-    }
-
-    if (status === 403) {
-      alert("You do not have permission to perform this action.");
+      window.location.href = "/login";
     }
 
     return Promise.reject(error);

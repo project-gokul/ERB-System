@@ -26,6 +26,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import FacultyVerify from "./pages/FacultyVerify";
 import AdminCertificates from "./pages/AdminCertificates";
+import ChatBot from "./pages/ChatBot";
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -59,6 +60,7 @@ function AnimatedRoutes() {
         <Route path="/admin/certificates" element={<PageWrapper><AdminCertificates /></PageWrapper>} />
 
         <Route path="*" element={<PageWrapper><h1>404 Page</h1></PageWrapper>} />
+        <Route path="/ChatBot" element={<PageWrapper><ChatBot></ChatBot></PageWrapper>}/>
       </Routes>
     </AnimatePresence>
   );

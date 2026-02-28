@@ -27,6 +27,38 @@ const CORE_FIELDS = [
 ];
 
 /* =====================================================
+   DELETE ANY COLUMN (⚠ MUST BE ABOVE /:id ROUTE)
+===================================================== */
+router.delete("/column/:columnName", authMiddleware, async (req, res) => {
+  try {
+    const { columnName } = req.params;
+
+    if (!columnName) {
+      return res.status(400).json({ message: "Column name required" });
+    }
+
+    let updateQuery;
+
+    if (CORE_FIELDS.includes(columnName)) {
+      updateQuery = { $unset: { [columnName]: "" } };
+    } else {
+      updateQuery = { $unset: { [`extraFields.${columnName}`]: "" } };
+    }
+
+    const result = await Student.updateMany({}, updateQuery);
+
+    res.json({
+      message: `Column '${columnName}' deleted successfully`,
+      modified: result.modifiedCount,
+    });
+
+  } catch (err) {
+    console.error("DELETE COLUMN ERROR:", err);
+    res.status(500).json({ message: "Failed to delete column" });
+  }
+});
+
+/* =====================================================
    CREATE STUDENT
 ===================================================== */
 router.post("/", authMiddleware, async (req, res) => {
@@ -80,27 +112,6 @@ router.get("/", authMiddleware, async (req, res) => {
   }
 });
 
-/* =====================================================
-   UPDATE STUDENT (INLINE EDIT)
-===================================================== */
-router.put("/:id", authMiddleware, async (req, res) => {
-  try {
-    const updated = await Student.findByIdAndUpdate(
-      req.params.id,
-      { $set: req.body },
-      { new: true }
-    );
-
-    if (!updated) {
-      return res.status(404).json({ message: "Student not found" });
-    }
-
-    res.json(updated);
-  } catch (err) {
-    console.error("UPDATE STUDENT ERROR:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
 
 /* =====================================================
    DELETE STUDENT
@@ -121,7 +132,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 });
 
 /* =====================================================
-   IMPORT FROM GOOGLE SHEET  ✅ FIXED
+   IMPORT FROM GOOGLE SHEET
 ===================================================== */
 router.post("/import", authMiddleware, async (req, res) => {
   try {
@@ -153,7 +164,7 @@ router.post("/import", authMiddleware, async (req, res) => {
             name: row.name || "",
             department: row.department || "",
             year: row.year || "",
-            phoneNo: row.phone || row.phoneNo || "", // ✅ FIX
+            phoneNo: row.phone || row.phoneNo || "",
             email: row.email || "",
             extraFields: row.extraFields || {},
           },
@@ -168,58 +179,48 @@ router.post("/import", authMiddleware, async (req, res) => {
       message: "Google Sheet imported successfully",
       count: imported,
     });
+
   } catch (err) {
     console.error("IMPORT ERROR:", err);
     res.status(500).json({ message: "Import failed" });
   }
 });
 
+
 /* =====================================================
-   DELETE ANY COLUMN (CORE + DYNAMIC)
+   UPDATE STUDENT (🔥 FIXED MERGE LOGIC)
 ===================================================== */
-router.delete("/column/:columnName", authMiddleware, async (req, res) => {
+router.put("/:id", authMiddleware, async (req, res) => {
   try {
-    const { columnName } = req.params;
+    const existingStudent = await Student.findById(req.params.id);
 
-    if (!columnName) {
-      return res.status(400).json({ message: "Column name required" });
+    if (!existingStudent) {
+      return res.status(404).json({ message: "Student not found" });
     }
 
-    let updateQuery = {};
+    const updatedData = {
+      ...req.body,
+    };
 
-    if (CORE_FIELDS.includes(columnName)) {
-      updateQuery = { $unset: { [columnName]: "" } };
-    } else {
-      updateQuery = { $unset: { [`extraFields.${columnName}`]: "" } };
+    // 🔥 IMPORTANT: Merge extraFields instead of overwrite
+    if (req.body.extraFields) {
+      updatedData.extraFields = {
+        ...Object.fromEntries(existingStudent.extraFields || []),
+        ...req.body.extraFields,
+      };
     }
 
-    const result = await Student.updateMany({}, updateQuery);
+    const updated = await Student.findByIdAndUpdate(
+      req.params.id,
+      { $set: updatedData },
+      { new: true }
+    );
 
-    if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "Column not found" });
-    }
-
-    res.json({ message: `Column '${columnName}' deleted successfully` });
+    res.json(updated);
   } catch (err) {
-    console.error("DELETE COLUMN ERROR:", err);
-    res.status(500).json({ message: "Failed to delete column" });
+    console.error("UPDATE STUDENT ERROR:", err);
+    res.status(500).json({ message: "Server error" });
   }
-});
-
-/* =====================================================
-   CLEAR DEFAULT COLUMN (SAFE)
-===================================================== */
-router.put("/column/default/:columnName", authMiddleware, async (req, res) => {
-  const { columnName } = req.params;
-
-  const allowed = ["name", "rollNo", "department", "year", "phoneNo", "email"];
-  if (!allowed.includes(columnName)) {
-    return res.status(400).json({ message: "Invalid default column" });
-  }
-
-  await Student.updateMany({}, { $set: { [columnName]: "" } });
-
-  res.json({ message: `Default column '${columnName}' cleared` });
 });
 
 module.exports = router;

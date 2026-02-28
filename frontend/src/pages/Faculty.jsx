@@ -75,7 +75,7 @@ const fetchFaculty = async () => {
 
     setLoading(true);
     try {
-      await api.post("/api/faculty", form);
+      await api.post("/faculty", form);
       setForm({
         name: "",
         email: "",
@@ -93,11 +93,11 @@ const fetchFaculty = async () => {
   };
 
   /* ================= DELETE FACULTY ================= */
-  const deleteFaculty = async (id) => {
+   const deleteFaculty = async (id) => {
     if (!window.confirm("Delete this faculty?")) return;
 
     try {
-      await api.delete(`/api/faculty/${id}`);
+      await api.delete(`/faculty/${id}`); // ✅ FIXED
       fetchFaculty();
     } catch (err) {
       console.error("Delete faculty error:", err);
