@@ -16,6 +16,8 @@ function StudentCertificates() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
 
   // ================= LOAD CERTIFICATES =================
   useEffect(() => {
@@ -26,10 +28,9 @@ function StudentCertificates() {
     try {
       setLoading(true);
       const res = await api.get("/certificates/my");
-      console.log("Student certs:", res.data);
       setCertificates(res.data || []);
     } catch (err) {
-      console.error("Failed to load certificates", err.response?.data || err);
+      console.error("Load failed:", err);
       setCertificates([]);
     } finally {
       setLoading(false);
@@ -40,71 +41,67 @@ function StudentCertificates() {
   const uploadCertificate = async (e) => {
     e.preventDefault();
 
-    if (!file) {
-      alert("Please select a file");
-      return;
-    }
-
-    if (!title.trim()) {
-      alert("Please enter certificate title");
-      return;
-    }
+    if (!file) return alert("Select a file");
+    if (!title.trim()) return alert("Enter title");
 
     try {
       const formData = new FormData();
       formData.append("title", title.trim());
-      formData.append("certificate", file); // MUST match backend multer field
+      formData.append("certificate", file);
 
-      console.log("Uploading:", title, file);
+      setUploadProgress(0);
 
       await api.post("/certificates/upload", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percent);
+        },
       });
-
-      alert("Certificate uploaded successfully!");
 
       setTitle("");
       setFile(null);
+      setUploadProgress(100);
+
+      setTimeout(() => setUploadProgress(0), 1000);
 
       await loadCertificates();
       setPage(1);
+
     } catch (err) {
-      console.error("Upload failed:", err.response?.data || err);
-      alert(
-        err.response?.data?.message ||
-          "Upload failed. Check backend logs."
-      );
+      console.error("Upload failed:", err);
+      alert("Upload failed");
+      setUploadProgress(0);
     }
   };
 
   // ================= DELETE =================
   const deleteCertificate = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this certificate?"))
-      return;
+    if (!window.confirm("Delete this certificate?")) return;
 
     try {
       await api.delete(`/certificates/${id}`);
       setCertificates((prev) => prev.filter((c) => c._id !== id));
     } catch (err) {
-      console.error("Delete failed", err.response?.data || err);
-      alert("Delete failed");
+      console.error("Delete failed:", err);
     }
   };
 
   // ================= DRAG & DROP =================
   const handleDrop = (e) => {
     e.preventDefault();
+    setDragActive(false);
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) {
-      setFile(droppedFile);
-    }
+    if (droppedFile) setFile(droppedFile);
   };
 
   const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
-  // ================= SEARCH + PAGINATION =================
+  // ================= SEARCH & PAGINATION =================
   const filtered = certificates.filter((c) =>
     c.title?.toLowerCase().includes(search.toLowerCase())
   );
@@ -120,8 +117,12 @@ function StudentCertificates() {
       <h2>Upload Certificate</h2>
 
       <div
-        className="drop-zone"
-        onDragOver={(e) => e.preventDefault()}
+        className={`drop-zone ${dragActive ? "active" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragActive(true);
+        }}
+        onDragLeave={() => setDragActive(false)}
         onDrop={handleDrop}
       >
         {file ? file.name : "Drag & drop certificate here"}
@@ -145,6 +146,18 @@ function StudentCertificates() {
 
         <button type="submit">Upload</button>
       </form>
+
+      {/* PROGRESS BAR */}
+      {uploadProgress > 0 && (
+        <div className="progress-bar">
+          <div
+            className="progress-fill"
+            style={{ width: `${uploadProgress}%` }}
+          >
+            {uploadProgress}%
+          </div>
+        </div>
+      )}
 
       <h3>My Certificates</h3>
 
@@ -196,9 +209,7 @@ function StudentCertificates() {
           <button disabled={page === 1} onClick={() => setPage(page - 1)}>
             Prev
           </button>
-          <span>
-            {page} / {totalPages}
-          </span>
+          <span>{page} / {totalPages}</span>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
@@ -208,7 +219,7 @@ function StudentCertificates() {
         </div>
       )}
 
-      {/* ================= PREVIEW ================= */}
+      {/* PREVIEW MODAL */}
       {preview && (
         <div className="modal-overlay" onClick={() => setPreview(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
