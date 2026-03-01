@@ -2,9 +2,15 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./StudentCertificates.css";
 
-const BACKEND_URL =
-  import.meta.env.VITE_API_URL?.replace("/api", "") ||
-  "https://erb-backend-sg4x.onrender.com";
+/* ================= BACKEND URL FIX ================= */
+
+// Always use environment variable if available
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://erb-backend-sg4x.onrender.com/api";
+
+// Remove /api to build file URLs
+const BACKEND_URL = API_URL.replace(/\/api$/, "");
 
 const PAGE_SIZE = 5;
 
@@ -19,7 +25,8 @@ function StudentCertificates() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
 
-  // ================= LOAD CERTIFICATES =================
+  /* ================= LOAD CERTIFICATES ================= */
+
   useEffect(() => {
     loadCertificates();
   }, []);
@@ -37,7 +44,8 @@ function StudentCertificates() {
     }
   };
 
-  // ================= UPLOAD =================
+  /* ================= UPLOAD ================= */
+
   const uploadCertificate = async (e) => {
     e.preventDefault();
 
@@ -52,10 +60,9 @@ function StudentCertificates() {
       setUploadProgress(0);
 
       await api.post("/certificates/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
+          if (!progressEvent.total) return;
           const percent = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
@@ -78,7 +85,8 @@ function StudentCertificates() {
     }
   };
 
-  // ================= DELETE =================
+  /* ================= DELETE ================= */
+
   const deleteCertificate = async (id) => {
     if (!window.confirm("Delete this certificate?")) return;
 
@@ -90,18 +98,34 @@ function StudentCertificates() {
     }
   };
 
+  /* ================= HELPERS ================= */
+
   const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
-  // ================= SEARCH & PAGINATION =================
+  // 🔥 SAFE URL BUILDER (IMPORTANT FIX)
+  const buildFileUrl = (fileUrl) => {
+    if (!fileUrl) return "";
+
+    // If already full URL (cloud storage etc.)
+    if (fileUrl.startsWith("http")) return fileUrl;
+
+    return `${BACKEND_URL}${fileUrl}`;
+  };
+
+  /* ================= SEARCH & PAGINATION ================= */
+
   const filtered = certificates.filter((c) =>
     c.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
   const paginated = filtered.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE
   );
+
+  /* ================= UI ================= */
 
   return (
     <div className="cert-container">
@@ -224,7 +248,7 @@ function StudentCertificates() {
         </div>
       )}
 
-      {/* PREVIEW MODAL */}
+      {/* ================= PREVIEW MODAL ================= */}
       {preview && (
         <div className="modal-overlay" onClick={() => setPreview(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -232,13 +256,16 @@ function StudentCertificates() {
 
             {isPDF(preview.fileUrl) ? (
               <iframe
-                src={`${BACKEND_URL}${preview.fileUrl}`}
+                src={buildFileUrl(preview.fileUrl)}
                 title="PDF Preview"
+                width="100%"
+                height="500px"
               />
             ) : (
               <img
-                src={`${BACKEND_URL}${preview.fileUrl}`}
+                src={buildFileUrl(preview.fileUrl)}
                 alt="Certificate"
+                style={{ width: "100%", borderRadius: "8px" }}
               />
             )}
 
