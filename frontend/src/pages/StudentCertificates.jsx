@@ -71,7 +71,6 @@ function StudentCertificates() {
 
       await loadCertificates();
       setPage(1);
-
     } catch (err) {
       console.error("Upload failed:", err);
       alert("Upload failed");
@@ -91,14 +90,6 @@ function StudentCertificates() {
     }
   };
 
-  // ================= DRAG & DROP =================
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setDragActive(false);
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile) setFile(droppedFile);
-  };
-
   const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
   // ================= SEARCH & PAGINATION =================
@@ -116,31 +107,45 @@ function StudentCertificates() {
     <div className="cert-container">
       <h2>Upload Certificate</h2>
 
-      <div
-        className={`drop-zone ${dragActive ? "active" : ""}`}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragActive(true);
-        }}
-        onDragLeave={() => setDragActive(false)}
-        onDrop={handleDrop}
-      >
-        {file ? file.name : "Drag & drop certificate here"}
-      </div>
-
       <form onSubmit={uploadCertificate} className="upload-form">
+
+        {/* DRAG + CLICK BOX */}
+        <label
+          className={`drop-zone ${dragActive ? "active" : ""}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
+          onDragLeave={() => setDragActive(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragActive(false);
+            const droppedFile = e.dataTransfer.files[0];
+            if (droppedFile) setFile(droppedFile);
+          }}
+        >
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            hidden
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+
+          {file ? (
+            <span className="file-name">📄 {file.name}</span>
+          ) : (
+            <span>
+              Drag & Drop certificate here <br />
+              <small>or Click to browse</small>
+            </span>
+          )}
+        </label>
+
         <input
           type="text"
           placeholder="Certificate Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          required
-        />
-
-        <input
-          type="file"
-          accept=".pdf,.jpg,.jpeg,.png"
-          onChange={(e) => setFile(e.target.files[0])}
           required
         />
 
