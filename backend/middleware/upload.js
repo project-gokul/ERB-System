@@ -2,7 +2,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// 🔥 Ensure folder exists automatically
+// ================= ENSURE FOLDER EXISTS =================
 const uploadPath = path.join(__dirname, "..", "uploads", "certificates");
 
 if (!fs.existsSync(uploadPath)) {
@@ -22,19 +22,21 @@ const storage = multer.diskStorage({
   },
 });
 
-// ================= FILE FILTER =================
+// ================= FILE FILTER (IMPROVED) =================
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    "application/pdf",
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-  ];
-
-  if (allowedTypes.includes(file.mimetype)) {
+  // Accept any image OR pdf
+  if (
+    file.mimetype.startsWith("image/") ||
+    file.mimetype === "application/pdf"
+  ) {
     cb(null, true);
   } else {
-    cb(new Error("Only PDF, JPG, JPEG, PNG files are allowed"));
+    cb(
+      new multer.MulterError(
+        "LIMIT_UNEXPECTED_FILE",
+        "Only image or PDF files allowed"
+      )
+    );
   }
 };
 
@@ -43,7 +45,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 🔥 5MB limit
+    fileSize: 5 * 1024 * 1024, // 5MB
   },
 });
 

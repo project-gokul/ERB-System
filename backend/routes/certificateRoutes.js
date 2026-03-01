@@ -8,12 +8,10 @@ const Notification = require("../models/Notification");
 
 const router = express.Router();
 
-
 // ================= ROLE HELPER =================
 const allowFacultyOrAdmin = (role) => {
   return ["Faculty", "HOD", "admin"].includes(role);
 };
-
 
 // ========================================================
 // ================= UPLOAD CERTIFICATE ===================
@@ -24,20 +22,29 @@ router.post(
   upload.single("certificate"),
   async (req, res) => {
     try {
-      if (!req.user?.id) {
-        return res.status(400).json({ message: "User ID missing in token" });
+      console.log("USER:", req.user);
+      console.log("BODY:", req.body);
+      console.log("FILE:", req.file);
+
+      const userId = req.user?.id || req.user?._id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Invalid token - user missing" });
       }
 
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      // 🔥 Important: correct file URL format
+      if (!req.body.title) {
+        return res.status(400).json({ message: "Title is required" });
+      }
+
       const filePath = `/uploads/certificates/${req.file.filename}`;
 
       const certificate = new Certificate({
-        studentId: req.user.id,
-        title: req.body.title || "Untitled Certificate",
+        studentId: userId,
+        title: req.body.title,
         fileUrl: filePath,
         status: "pending",
       });
@@ -67,42 +74,40 @@ router.post(
   }
 );
 
-
 // ========================================================
 // ================= GET MY CERTIFICATES ==================
 // ========================================================
 router.get("/my", authMiddleware, async (req, res) => {
   try {
-    const certs = await Certificate.find({ studentId: req.user.id })
-      .sort({ createdAt: -1 });
+    const userId = req.user?.id || req.user?._id;
+
+    const certs = await Certificate.find({ studentId: userId })
+      .sort({ uploadedAt: -1 });
 
     res.status(200).json(certs);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch certificates" });
   }
 });
-
 
 // ========================================================
 // ================= DELETE CERTIFICATE ===================
 // ========================================================
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
+    const userId = req.user?.id || req.user?._id;
+
     const cert = await Certificate.findOne({
       _id: req.params.id,
-      studentId: req.user.id,
+      studentId: userId,
     });
 
     if (!cert) {
       return res.status(404).json({ message: "Certificate not found" });
     }
 
-    // 🔥 Safe file deletion
-    const absolutePath = path.join(
-      __dirname,
-      "..",
-      cert.fileUrl
-    );
+    const absolutePath = path.join(__dirname, "..", cert.fileUrl);
 
     if (fs.existsSync(absolutePath)) {
       fs.unlinkSync(absolutePath);
@@ -118,7 +123,6 @@ router.delete("/:id", authMiddleware, async (req, res) => {
   }
 });
 
-
 // ========================================================
 // ============ GET ALL CERTIFICATES (ADMIN) =============
 // ========================================================
@@ -132,15 +136,15 @@ router.get("/admin/all", authMiddleware, async (req, res) => {
       status: { $ne: "rejected" }
     })
       .populate("studentId", "email")
-      .sort({ createdAt: -1 });
+      .sort({ uploadedAt: -1 });
 
     res.status(200).json(certs);
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch certificates" });
   }
 });
-
 
 // ========================================================
 // ================= APPROVE / REJECT =====================
@@ -173,6 +177,7 @@ router.patch("/admin/:id/status", authMiddleware, async (req, res) => {
     });
 
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Failed to update status" });
   }
 });

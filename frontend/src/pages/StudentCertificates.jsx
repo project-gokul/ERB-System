@@ -19,43 +19,63 @@ function StudentCertificates() {
 
   // ================= LOAD CERTIFICATES =================
   useEffect(() => {
-    const loadCertificates = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get("/certificates/my"); // ✅ CORRECT ROUTE
-        console.log("Student certs:", res.data); // DEBUG
-        setCertificates(res.data || []);
-      } catch (err) {
-        console.error("Failed to load certificates", err);
-        setCertificates([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadCertificates();
   }, []);
+
+  const loadCertificates = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get("/certificates/my");
+      console.log("Student certs:", res.data);
+      setCertificates(res.data || []);
+    } catch (err) {
+      console.error("Failed to load certificates", err.response?.data || err);
+      setCertificates([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ================= UPLOAD =================
   const uploadCertificate = async (e) => {
     e.preventDefault();
-    if (!file || !title) return;
+
+    if (!file) {
+      alert("Please select a file");
+      return;
+    }
+
+    if (!title.trim()) {
+      alert("Please enter certificate title");
+      return;
+    }
 
     try {
       const formData = new FormData();
-      formData.append("title", title);
-      formData.append("certificate", file);
+      formData.append("title", title.trim());
+      formData.append("certificate", file); // MUST match backend multer field
 
-      await api.post("/certificates/upload", formData);
+      console.log("Uploading:", title, file);
+
+      await api.post("/certificates/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      alert("Certificate uploaded successfully!");
 
       setTitle("");
       setFile(null);
 
-      const res = await api.get("/certificates/my"); // ✅ FIXED
-      setCertificates(res.data || []);
+      await loadCertificates();
       setPage(1);
     } catch (err) {
-      console.error("Upload failed", err);
+      console.error("Upload failed:", err.response?.data || err);
+      alert(
+        err.response?.data?.message ||
+          "Upload failed. Check backend logs."
+      );
     }
   };
 
@@ -68,22 +88,25 @@ function StudentCertificates() {
       await api.delete(`/certificates/${id}`);
       setCertificates((prev) => prev.filter((c) => c._id !== id));
     } catch (err) {
-      console.error("Delete failed", err);
+      console.error("Delete failed", err.response?.data || err);
+      alert("Delete failed");
     }
   };
 
   // ================= DRAG & DROP =================
   const handleDrop = (e) => {
     e.preventDefault();
-    setFile(e.dataTransfer.files[0]);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      setFile(droppedFile);
+    }
   };
 
-  // ================= HELPERS =================
   const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
   // ================= SEARCH + PAGINATION =================
   const filtered = certificates.filter((c) =>
-    c.title.toLowerCase().includes(search.toLowerCase())
+    c.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -146,7 +169,7 @@ function StudentCertificates() {
           <div key={c._id} className="cert-card fade-slide">
             <div className="cert-info">
               <span className="icon">
-                {isPDF(c.fileUrl) ? "📄" : "🖼️"}  {/* ✅ FIXED */}
+                {isPDF(c.fileUrl) ? "📄" : "🖼️"}
               </span>
               <span className="title">{c.title}</span>
             </div>
@@ -185,13 +208,13 @@ function StudentCertificates() {
         </div>
       )}
 
-      {/* ================= MODAL PREVIEW ================= */}
+      {/* ================= PREVIEW ================= */}
       {preview && (
         <div className="modal-overlay" onClick={() => setPreview(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h4>{preview.title}</h4>
 
-            {isPDF(preview.fileUrl) ? (   // ✅ FIXED
+            {isPDF(preview.fileUrl) ? (
               <iframe
                 src={`${BACKEND_URL}${preview.fileUrl}`}
                 title="PDF Preview"
