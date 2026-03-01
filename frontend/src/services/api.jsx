@@ -1,23 +1,35 @@
 import axios from "axios";
 
-// ✅ Make sure environment variable exists
+/* =====================================================
+   BASE URL FIX
+   ===================================================== */
+
+// VITE_API_URL should NOT include /api
+// Example:
+// VITE_API_URL = https://erb-backend-sg4x.onrender.com
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 if (!BASE_URL) {
   throw new Error("VITE_API_URL is not defined in environment variables");
 }
 
-// ✅ Create axios instance
+/* =====================================================
+   AXIOS INSTANCE
+   ===================================================== */
+
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
-  withCredentials: true,
-  // ⬆ Increased to 60 seconds (Render free plan safe)
+  timeout: 60000, // 60 seconds for Render cold start
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// ================= REQUEST INTERCEPTOR =================
+/* =====================================================
+   REQUEST INTERCEPTOR
+   ===================================================== */
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -31,20 +43,29 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ================= RESPONSE INTERCEPTOR =================
+/* =====================================================
+   RESPONSE INTERCEPTOR
+   ===================================================== */
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 🔥 Handle timeout separately
+
+    // 🔥 Timeout handling
     if (error.code === "ECONNABORTED") {
       console.error("Request timeout. Backend might be sleeping.");
       alert("Server is waking up... please try again in a few seconds.");
     }
 
-    // 🔐 Handle unauthorized
+    // 🔐 Unauthorized (Token invalid or expired)
     if (error.response?.status === 401) {
       localStorage.clear();
       window.location.replace("/login");
+    }
+
+    // 🔐 Forbidden (Role issue)
+    if (error.response?.status === 403) {
+      console.error("Access denied: insufficient role permissions.");
     }
 
     return Promise.reject(error);
