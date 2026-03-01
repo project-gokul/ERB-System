@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./StudentCertificates.css";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace("/api", "")
-  : "http://localhost:5000";
+const BACKEND_URL =
+  import.meta.env.VITE_API_URL?.replace("/api", "") ||
+  "https://erb-backend-sg4x.onrender.com";
 
 const PAGE_SIZE = 5;
 
