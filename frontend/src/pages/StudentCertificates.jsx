@@ -2,15 +2,26 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./StudentCertificates.css";
 
-/* ================= BACKEND URL FIX ================= */
+/* ================= BACKEND URL CONFIG ================= */
 
-// Always use environment variable if available
-const API_URL =
+/*
+IMPORTANT:
+VITE_API_URL in Vercel MUST be:
+https://erb-backend-sg4x.onrender.com
+
+NOT:
+https://erb-backend-sg4x.onrender.com/api
+*/
+
+const RAW_API_URL =
   import.meta.env.VITE_API_URL ||
-  "https://erb-backend-sg4x.onrender.com/api";
+  "https://erb-backend-sg4x.onrender.com";
 
-// Remove /api to build file URLs
-const BACKEND_URL = API_URL.replace(/\/api$/, "");
+// Remove trailing slash if exists
+const CLEAN_API_URL = RAW_API_URL.replace(/\/$/, "");
+
+// Backend base for static files
+const BACKEND_URL = CLEAN_API_URL;
 
 const PAGE_SIZE = 5;
 
@@ -102,12 +113,17 @@ function StudentCertificates() {
 
   const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
-  // 🔥 SAFE URL BUILDER (IMPORTANT FIX)
+  // 🔥 SAFE FILE URL BUILDER
   const buildFileUrl = (fileUrl) => {
     if (!fileUrl) return "";
 
-    // If already full URL (cloud storage etc.)
+    // If already full URL (Cloudinary, S3, etc.)
     if (fileUrl.startsWith("http")) return fileUrl;
+
+    // Ensure leading slash
+    if (!fileUrl.startsWith("/")) {
+      fileUrl = "/" + fileUrl;
+    }
 
     return `${BACKEND_URL}${fileUrl}`;
   };
@@ -132,8 +148,6 @@ function StudentCertificates() {
       <h2>Upload Certificate</h2>
 
       <form onSubmit={uploadCertificate} className="upload-form">
-
-        {/* DRAG + CLICK BOX */}
         <label
           className={`drop-zone ${dragActive ? "active" : ""}`}
           onDragOver={(e) => {
@@ -176,7 +190,6 @@ function StudentCertificates() {
         <button type="submit">Upload</button>
       </form>
 
-      {/* PROGRESS BAR */}
       {uploadProgress > 0 && (
         <div className="progress-bar">
           <div
@@ -238,7 +251,9 @@ function StudentCertificates() {
           <button disabled={page === 1} onClick={() => setPage(page - 1)}>
             Prev
           </button>
-          <span>{page} / {totalPages}</span>
+          <span>
+            {page} / {totalPages}
+          </span>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
