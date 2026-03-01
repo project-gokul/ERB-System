@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./StudentCertificates.css";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace("/api", "")
-  : "http://localhost:5000";
+const BACKEND_URL =
+  import.meta.env.VITE_API_URL?.replace("/api", "") ||
+  "https://erb-backend-sg4x.onrender.com";
 
 const PAGE_SIZE = 5;
 
@@ -19,7 +19,6 @@ function StudentCertificates() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
 
-  // ================= LOAD CERTIFICATES =================
   useEffect(() => {
     loadCertificates();
   }, []);
@@ -37,7 +36,6 @@ function StudentCertificates() {
     }
   };
 
-  // ================= UPLOAD =================
   const uploadCertificate = async (e) => {
     e.preventDefault();
 
@@ -52,9 +50,7 @@ function StudentCertificates() {
       setUploadProgress(0);
 
       await api.post("/certificates/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           const percent = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
@@ -66,7 +62,6 @@ function StudentCertificates() {
       setTitle("");
       setFile(null);
       setUploadProgress(100);
-
       setTimeout(() => setUploadProgress(0), 1000);
 
       await loadCertificates();
@@ -78,7 +73,6 @@ function StudentCertificates() {
     }
   };
 
-  // ================= DELETE =================
   const deleteCertificate = async (id) => {
     if (!window.confirm("Delete this certificate?")) return;
 
@@ -92,7 +86,6 @@ function StudentCertificates() {
 
   const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
-  // ================= SEARCH & PAGINATION =================
   const filtered = certificates.filter((c) =>
     c.title?.toLowerCase().includes(search.toLowerCase())
   );
@@ -108,8 +101,7 @@ function StudentCertificates() {
       <h2>Upload Certificate</h2>
 
       <form onSubmit={uploadCertificate} className="upload-form">
-
-        {/* DRAG + CLICK BOX */}
+        {/* Drag & Drop + Click Box */}
         <label
           className={`drop-zone ${dragActive ? "active" : ""}`}
           onDragOver={(e) => {
@@ -152,7 +144,6 @@ function StudentCertificates() {
         <button type="submit">Upload</button>
       </form>
 
-      {/* PROGRESS BAR */}
       {uploadProgress > 0 && (
         <div className="progress-bar">
           <div
@@ -214,7 +205,9 @@ function StudentCertificates() {
           <button disabled={page === 1} onClick={() => setPage(page - 1)}>
             Prev
           </button>
-          <span>{page} / {totalPages}</span>
+          <span>
+            {page} / {totalPages}
+          </span>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
@@ -224,7 +217,6 @@ function StudentCertificates() {
         </div>
       )}
 
-      {/* PREVIEW MODAL */}
       {preview && (
         <div className="modal-overlay" onClick={() => setPreview(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -232,13 +224,24 @@ function StudentCertificates() {
 
             {isPDF(preview.fileUrl) ? (
               <iframe
-                src={`${BACKEND_URL}${preview.fileUrl}`}
+                src={
+                  preview.fileUrl.startsWith("http")
+                    ? preview.fileUrl
+                    : `${BACKEND_URL}${preview.fileUrl}`
+                }
                 title="PDF Preview"
+                width="100%"
+                height="450px"
               />
             ) : (
               <img
-                src={`${BACKEND_URL}${preview.fileUrl}`}
+                src={
+                  preview.fileUrl.startsWith("http")
+                    ? preview.fileUrl
+                    : `${BACKEND_URL}${preview.fileUrl}`
+                }
                 alt="Certificate"
+                style={{ width: "100%", borderRadius: "8px" }}
               />
             )}
 
