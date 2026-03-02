@@ -2,6 +2,7 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const path = require("path");
 require("dotenv").config();
 
 // ================= CHECK ENV =================
@@ -10,21 +11,13 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 
-// ================= IMPORT ROUTES =================
-const authRoutes = require("./routes/authRoutes");
-const facultyRoutes = require("./routes/facultyRoutes");
-const studentRoutes = require("./routes/studentRoutes");
-const subjectRoutes = require("./routes/subjectRoutes");
-const certificateRoutes = require("./routes/certificateRoutes");
-const chatRoutes = require("./routes/chatRoutes");
-
 // ================= INIT APP =================
 const app = express();
 
 // ================= CORS CONFIG =================
 app.use(
   cors({
-    origin: true, // allow all origins dynamically
+    origin: true,
     credentials: true,
   })
 );
@@ -34,7 +27,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ================= STATIC FILES =================
-app.use("/uploads", express.static("uploads"));
+// VERY IMPORTANT for certificate preview
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ================= IMPORT ROUTES =================
+const authRoutes = require("./routes/authRoutes");
+const facultyRoutes = require("./routes/facultyRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const subjectRoutes = require("./routes/subjectRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+const notificationRoutes = require("./routes/notification");
 
 // ================= ROUTES =================
 app.use("/api/auth", authRoutes);
@@ -43,6 +46,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/subjects", subjectRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // ================= HEALTH CHECK =================
 app.get("/", (req, res) => {

@@ -25,7 +25,7 @@ const allowFacultyOrAdmin = (role) => {
 router.post(
   "/upload",
   authMiddleware,
-  upload.single("certificate"), // Frontend must use "certificate"
+  upload.single("certificate"),
   async (req, res) => {
     try {
       const userId = req.user?.id;
@@ -44,16 +44,17 @@ router.post(
         return res.status(400).json({ message: "Title is required" });
       }
 
-      const filePath = `/uploads/certificates/${req.file.filename}`;
+      // ✅ FIXED: use BASE_URL for production
+      const fileUrl = `${process.env.BASE_URL}/uploads/certificates/${req.file.filename}`;
 
       const certificate = await Certificate.create({
         studentId: userId,
         title,
-        fileUrl: filePath,
+        fileUrl,
         status: "pending",
       });
 
-      // Create notifications for faculty/hod/admin
+      // Create notifications
       const roles = ["faculty", "hod", "admin"];
 
       const notifications = roles.map((role) => ({
@@ -115,8 +116,14 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Certificate not found" });
     }
 
-    // Delete file from disk
-    const absolutePath = path.join(__dirname, "..", cert.fileUrl);
+    // ✅ FIXED: Proper absolute path extraction
+    const relativePath = cert.fileUrl.split("/uploads/")[1];
+    const absolutePath = path.join(
+      __dirname,
+      "..",
+      "uploads",
+      relativePath
+    );
 
     if (fs.existsSync(absolutePath)) {
       fs.unlinkSync(absolutePath);
