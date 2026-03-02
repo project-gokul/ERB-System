@@ -1,33 +1,31 @@
 const express = require("express");
 const upload = require("../middleware/upload");
 const Certificate = require("../models/Certificate");
-const authMiddleware = require("../middleware/authMiddleware");
 const Notification = require("../models/Notification");
+const authMiddleware = require("../middleware/authMiddleware");
 const fs = require("fs");
 const path = require("path");
 
 const router = express.Router();
 
-/* ========================================================
-   ================= ROLE HELPER (FIXED) ==================
-   ======================================================== */
+/* =========================================================
+   ================= ROLE HELPER ===========================
+========================================================= */
 
 const allowFacultyOrAdmin = (role) => {
   if (!role) return false;
-
   const normalizedRole = role.toLowerCase();
-
   return ["faculty", "hod", "admin"].includes(normalizedRole);
 };
 
-/* ========================================================
-   ================= UPLOAD CERTIFICATE ===================
-   ======================================================== */
+/* =========================================================
+   ================= UPLOAD CERTIFICATE ====================
+========================================================= */
 
 router.post(
   "/upload",
   authMiddleware,
-  upload.single("certificate"),
+  upload.single("certificate"), // Frontend must use "certificate"
   async (req, res) => {
     try {
       const userId = req.user?.id;
@@ -40,7 +38,9 @@ router.post(
         return res.status(400).json({ message: "No file uploaded" });
       }
 
-      if (!req.body.title) {
+      const { title } = req.body;
+
+      if (!title) {
         return res.status(400).json({ message: "Title is required" });
       }
 
@@ -48,12 +48,12 @@ router.post(
 
       const certificate = await Certificate.create({
         studentId: userId,
-        title: req.body.title,
+        title,
         fileUrl: filePath,
         status: "pending",
       });
 
-      /* 🔔 Create notifications for Faculty/HOD/Admin */
+      // Create notifications for faculty/hod/admin
       const roles = ["faculty", "hod", "admin"];
 
       const notifications = roles.map((role) => ({
@@ -64,40 +64,43 @@ router.post(
 
       await Notification.insertMany(notifications);
 
-      res.status(201).json({
+      return res.status(201).json({
         message: "Certificate uploaded successfully",
         certificate,
       });
 
     } catch (err) {
       console.error("UPLOAD ERROR:", err);
-      res.status(500).json({ error: "Server error during upload" });
+      return res.status(500).json({
+        error: err.message || "Server error during upload",
+      });
     }
   }
 );
 
-/* ========================================================
-   ================= GET MY CERTIFICATES ==================
-   ======================================================== */
+/* =========================================================
+   ================= GET MY CERTIFICATES ===================
+========================================================= */
 
 router.get("/my", authMiddleware, async (req, res) => {
   try {
     const userId = req.user?.id;
 
-    const certs = await Certificate.find({ studentId: userId })
-      .sort({ createdAt: -1 });
+    const certificates = await Certificate.find({
+      studentId: userId,
+    }).sort({ createdAt: -1 });
 
-    res.status(200).json(certs);
+    return res.status(200).json(certificates);
 
   } catch (err) {
     console.error("FETCH MY ERROR:", err);
-    res.status(500).json({ error: "Failed to fetch certificates" });
+    return res.status(500).json({ error: "Failed to fetch certificates" });
   }
 });
 
-/* ========================================================
-   ================= DELETE CERTIFICATE ===================
-   ======================================================== */
+/* =========================================================
+   ================= DELETE CERTIFICATE ====================
+========================================================= */
 
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
@@ -112,7 +115,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Certificate not found" });
     }
 
-    /* Delete file from disk */
+    // Delete file from disk
     const absolutePath = path.join(__dirname, "..", cert.fileUrl);
 
     if (fs.existsSync(absolutePath)) {
@@ -121,17 +124,17 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
     await cert.deleteOne();
 
-    res.json({ message: "Certificate deleted successfully" });
+    return res.json({ message: "Certificate deleted successfully" });
 
   } catch (err) {
     console.error("DELETE ERROR:", err);
-    res.status(500).json({ error: "Failed to delete certificate" });
+    return res.status(500).json({ error: "Failed to delete certificate" });
   }
 });
 
-/* ========================================================
-   ============ GET ALL CERTIFICATES (ADMIN) =============
-   ======================================================== */
+/* =========================================================
+   ============= GET ALL CERTIFICATES (ADMIN) ==============
+========================================================= */
 
 router.get("/admin/all", authMiddleware, async (req, res) => {
   try {
@@ -139,23 +142,23 @@ router.get("/admin/all", authMiddleware, async (req, res) => {
       return res.status(403).json({ message: "Access denied" });
     }
 
-    const certs = await Certificate.find({
+    const certificates = await Certificate.find({
       status: { $ne: "rejected" },
     })
       .populate("studentId", "email")
       .sort({ createdAt: -1 });
 
-    res.status(200).json(certs);
+    return res.status(200).json(certificates);
 
   } catch (err) {
     console.error("ADMIN FETCH ERROR:", err);
-    res.status(500).json({ error: "Failed to fetch certificates" });
+    return res.status(500).json({ error: "Failed to fetch certificates" });
   }
 });
 
-/* ========================================================
-   ================= APPROVE / REJECT =====================
-   ======================================================== */
+/* =========================================================
+   ================= APPROVE / REJECT ======================
+========================================================= */
 
 router.patch("/admin/:id/status", authMiddleware, async (req, res) => {
   try {
@@ -179,14 +182,14 @@ router.patch("/admin/:id/status", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Certificate not found" });
     }
 
-    res.json({
+    return res.json({
       message: `Certificate ${status} successfully`,
       certificate: cert,
     });
 
   } catch (err) {
     console.error("STATUS UPDATE ERROR:", err);
-    res.status(500).json({ error: "Failed to update status" });
+    return res.status(500).json({ error: "Failed to update status" });
   }
 });
 

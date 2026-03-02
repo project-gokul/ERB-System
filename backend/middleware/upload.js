@@ -1,51 +1,59 @@
 const multer = require("multer");
-const path = require("path");
 const fs = require("fs");
+const path = require("path");
 
-// ================= ENSURE FOLDER EXISTS =================
-const uploadPath = path.join(__dirname, "..", "uploads", "certificates");
+/* =========================================================
+   ================= CREATE UPLOAD FOLDER ==================
+========================================================= */
 
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath, { recursive: true });
+// Absolute path to uploads/certificates
+const uploadDir = path.join(__dirname, "..", "uploads", "certificates");
+
+// Create folder if not exists
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+  console.log("Upload folder created:", uploadDir);
+} else {
+  console.log("Upload folder already exists:", uploadDir);
 }
 
-// ================= STORAGE =================
+/* =========================================================
+   ================= MULTER STORAGE CONFIG =================
+========================================================= */
+
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadPath);
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
   },
 
-  filename: (req, file, cb) => {
+  filename: function (req, file, cb) {
     const uniqueName =
-      Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueName + path.extname(file.originalname));
+      Date.now() + "-" + file.originalname.replace(/\s+/g, "_");
+    cb(null, uniqueName);
   },
 });
 
-// ================= FILE FILTER (IMPROVED) =================
+/* =========================================================
+   ================= FILE FILTER (PDF ONLY) =================
+========================================================= */
+
 const fileFilter = (req, file, cb) => {
-  // Accept any image OR pdf
-  if (
-    file.mimetype.startsWith("image/") ||
-    file.mimetype === "application/pdf"
-  ) {
+  if (file.mimetype === "application/pdf") {
     cb(null, true);
   } else {
-    cb(
-      new multer.MulterError(
-        "LIMIT_UNEXPECTED_FILE",
-        "Only image or PDF files allowed"
-      )
-    );
+    cb(new Error("Only PDF files are allowed"), false);
   }
 };
 
-// ================= MULTER EXPORT =================
+/* =========================================================
+   ================= MULTER CONFIG =========================
+========================================================= */
+
 const upload = multer({
-  storage,
-  fileFilter,
+  storage: storage,
+  fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 10 * 1024 * 1024, // 10MB limit
   },
 });
 
