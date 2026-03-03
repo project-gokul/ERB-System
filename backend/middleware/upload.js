@@ -43,7 +43,7 @@ const fileFilter = (req, file, cb) => {
   if (file.mimetype === "application/pdf") {
     cb(null, true);
   } else {
-    cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "Only PDF files allowed"));
+    cb(new Error("Only PDF files are allowed"));
   }
 };
 
