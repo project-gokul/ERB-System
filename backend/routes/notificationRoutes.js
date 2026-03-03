@@ -16,11 +16,14 @@ router.get("/my", authMiddleware, async (req, res) => {
     }
 
     const userRole = req.user.role.toLowerCase();
-    const userId = req.user.id;
+
+    // 🔥 Convert to ObjectId (VERY IMPORTANT)
+    const userObjectId = new mongoose.Types.ObjectId(req.user.id);
 
     const notifications = await Notification.find({
       recipientRole: userRole,
-      recipientId: userId, // 🔥 IMPORTANT FIX (user specific)
+      recipientId: userObjectId,
+      isRead: false, // optional (show only unread)
     })
       .sort({ createdAt: -1 })
       .populate({
@@ -54,10 +57,12 @@ router.patch("/:id/read", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Invalid notification ID" });
     }
 
+    const userObjectId = new mongoose.Types.ObjectId(req.user.id);
+
     const notification = await Notification.findOneAndUpdate(
       {
         _id: id,
-        recipientId: req.user.id, // 🔥 Only owner can update
+        recipientId: userObjectId,
       },
       { isRead: true },
       { new: true }
@@ -67,7 +72,7 @@ router.patch("/:id/read", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Notification not found" });
     }
 
-    return res.json({
+    return res.status(200).json({
       message: "Notification marked as read",
       notification,
     });
@@ -75,6 +80,7 @@ router.patch("/:id/read", authMiddleware, async (req, res) => {
     console.error("MARK READ ERROR:", err);
     return res.status(500).json({
       message: "Failed to update notification",
+      error: err.message,
     });
   }
 });
@@ -91,22 +97,25 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       return res.status(400).json({ message: "Invalid notification ID" });
     }
 
+    const userObjectId = new mongoose.Types.ObjectId(req.user.id);
+
     const notification = await Notification.findOneAndDelete({
       _id: id,
-      recipientId: req.user.id, // 🔥 Only owner can delete
+      recipientId: userObjectId,
     });
 
     if (!notification) {
       return res.status(404).json({ message: "Notification not found" });
     }
 
-    return res.json({
+    return res.status(200).json({
       message: "Notification deleted successfully",
     });
   } catch (err) {
     console.error("DELETE NOTIFICATION ERROR:", err);
     return res.status(500).json({
       message: "Failed to delete notification",
+      error: err.message,
     });
   }
 });
