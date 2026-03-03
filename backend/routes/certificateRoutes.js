@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 const upload = require("../middleware/upload");
 const Certificate = require("../models/Certificate");
 const Notification = require("../models/Notification");
@@ -22,29 +23,25 @@ const allowFacultyOrAdmin = (role) => {
    ================= UPLOAD CERTIFICATE ====================
 ========================================================= */
 
-router.post(
-  "/upload",
-  authMiddleware,
-  upload.single("certificate"),
-  async (req, res) => {
+router.post("/upload", authMiddleware, (req, res) => {
+  upload.single("file")(req, res, async function (err) {
+
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
     try {
-      const userId = req.user?.id;
-
-      if (!userId) {
-        return res.status(401).json({ message: "Invalid token" });
-      }
-
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-
+      const userId = req.user.id;
       const { title } = req.body;
 
-      if (!title) {
-        return res.status(400).json({ message: "Title is required" });
-      }
-
-      // ✅ FIXED: use BASE_URL for production
       const fileUrl = `${process.env.BASE_URL}/uploads/certificates/${req.file.filename}`;
 
       const certificate = await Certificate.create({
@@ -54,13 +51,14 @@ router.post(
         status: "pending",
       });
 
-      // Create notifications
+      // Create notifications (role-based)
       const roles = ["faculty", "hod", "admin"];
 
       const notifications = roles.map((role) => ({
         recipientRole: role,
-        message: `New certificate uploaded by student`,
+        message: "New certificate uploaded by student",
         certificateId: certificate._id,
+        isRead: false,
       }));
 
       await Notification.insertMany(notifications);
@@ -76,8 +74,9 @@ router.post(
         error: err.message || "Server error during upload",
       });
     }
-  }
-);
+
+  });
+});
 
 /* =========================================================
    ================= GET MY CERTIFICATES ===================
@@ -85,7 +84,7 @@ router.post(
 
 router.get("/my", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user.id;
 
     const certificates = await Certificate.find({
       studentId: userId,
@@ -105,7 +104,7 @@ router.get("/my", authMiddleware, async (req, res) => {
 
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user.id;
 
     const cert = await Certificate.findOne({
       _id: req.params.id,
@@ -116,14 +115,8 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Certificate not found" });
     }
 
-    // ✅ FIXED: Proper absolute path extraction
     const relativePath = cert.fileUrl.split("/uploads/")[1];
-    const absolutePath = path.join(
-      __dirname,
-      "..",
-      "uploads",
-      relativePath
-    );
+    const absolutePath = path.join(__dirname, "..", "uploads", relativePath);
 
     if (fs.existsSync(absolutePath)) {
       fs.unlinkSync(absolutePath);

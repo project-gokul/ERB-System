@@ -6,15 +6,17 @@ const path = require("path");
    ================= CREATE UPLOAD FOLDER ==================
 ========================================================= */
 
-// Absolute path to uploads/certificates
 const uploadDir = path.join(__dirname, "..", "uploads", "certificates");
 
-// Create folder if not exists
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-  console.log("Upload folder created:", uploadDir);
-} else {
-  console.log("Upload folder already exists:", uploadDir);
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+    console.log("Upload folder created:", uploadDir);
+  } else {
+    console.log("Upload folder already exists:", uploadDir);
+  }
+} catch (err) {
+  console.error("Error creating upload folder:", err);
 }
 
 /* =========================================================
@@ -41,7 +43,7 @@ const fileFilter = (req, file, cb) => {
   if (file.mimetype === "application/pdf") {
     cb(null, true);
   } else {
-    cb(new Error("Only PDF files are allowed"), false);
+    cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "Only PDF files allowed"));
   }
 };
 
@@ -50,10 +52,10 @@ const fileFilter = (req, file, cb) => {
 ========================================================= */
 
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
+  storage,
+  fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB
   },
 });
 
