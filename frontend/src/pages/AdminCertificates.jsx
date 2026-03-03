@@ -5,7 +5,6 @@ import "./AdminCertificates.css";
 function AdminCertificates() {
   const [certs, setCerts] = useState([]);
 
-  // ================= LOAD CERTIFICATES =================
   useEffect(() => {
     api
       .get("/certificates/admin/all")
@@ -16,7 +15,6 @@ function AdminCertificates() {
       .catch((err) => console.error(err));
   }, []);
 
-  // ================= UPDATE STATUS =================
   const updateStatus = async (id, status) => {
     try {
       await api.patch(`/certificates/admin/${id}/status`, { status });
@@ -35,16 +33,12 @@ function AdminCertificates() {
     }
   };
 
-  // ================= PREVIEW =================
   const handlePreview = (cert) => {
-    console.log("Preview clicked:", cert);
-
     if (!cert.fileUrl) {
       alert("No certificate uploaded");
       return;
     }
 
-    // ✅ FIXED: Do NOT add localhost
     window.open(cert.fileUrl, "_blank");
   };
 
