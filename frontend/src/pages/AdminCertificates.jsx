@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import "./AdminCertificates.css";
 
-const BACKEND_URL = "http://localhost:5000";
-
 function AdminCertificates() {
   const [certs, setCerts] = useState([]);
 
@@ -12,7 +10,7 @@ function AdminCertificates() {
     api
       .get("/certificates/admin/all")
       .then((res) => {
-        console.log("Admin Certificates:", res.data); // 🔥 DEBUG
+        console.log("Admin Certificates:", res.data);
         setCerts(res.data || []);
       })
       .catch((err) => console.error(err));
@@ -39,14 +37,15 @@ function AdminCertificates() {
 
   // ================= PREVIEW =================
   const handlePreview = (cert) => {
-    console.log("Preview clicked:", cert); // 🔥 DEBUG
+    console.log("Preview clicked:", cert);
 
-    if (!cert.fileUrl) {   // ✅ FIXED HERE
+    if (!cert.fileUrl) {
       alert("No certificate uploaded");
       return;
     }
 
-    window.open(`${BACKEND_URL}${cert.fileUrl}`, "_blank");
+    // ✅ FIXED: Do NOT add localhost
+    window.open(cert.fileUrl, "_blank");
   };
 
   return (
