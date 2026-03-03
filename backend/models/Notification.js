@@ -18,6 +18,22 @@ const notificationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    recipientId: {
+  type: mongoose.Schema.Types.ObjectId,
+  required: true,
+  refPath: "recipientModel"
+},
+
+recipientRole: {
+  type: String,
+  required: true
+},
+
+recipientModel: {
+  type: String,
+  required: true,
+  enum: ["Student", "Faculty", "Admin"]
+}
   },
   { timestamps: true }
 );
