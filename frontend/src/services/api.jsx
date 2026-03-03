@@ -1,17 +1,18 @@
 import axios from "axios";
 
 /* =====================================================
-   BASE URL FIX
+   BASE URL CONFIGURATION
    ===================================================== */
 
-// VITE_API_URL should NOT include /api
-// Example:
-// VITE_API_URL = https://erb-backend-sg4x.onrender.com
+// If environment variable exists → use it
+// Otherwise fallback to production backend
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://erb-backend-sg4x.onrender.com";
 
 if (!BASE_URL) {
-  throw new Error("VITE_API_URL is not defined in environment variables");
+  console.error("VITE_API_URL is missing!");
 }
 
 /* =====================================================
@@ -20,7 +21,7 @@ if (!BASE_URL) {
 
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
-  timeout: 60000, // 60 seconds for Render cold start
+  timeout: 60000, // 60 seconds (Render cold start safe)
   headers: {
     "Content-Type": "application/json",
   },
@@ -53,17 +54,17 @@ api.interceptors.response.use(
 
     // 🔥 Timeout handling
     if (error.code === "ECONNABORTED") {
-      console.error("Request timeout. Backend might be sleeping.");
+      console.error("Request timeout. Backend may be sleeping.");
       alert("Server is waking up... please try again in a few seconds.");
     }
 
-    // 🔐 Unauthorized (Token invalid or expired)
+    // 🔐 Unauthorized
     if (error.response?.status === 401) {
       localStorage.clear();
       window.location.replace("/login");
     }
 
-    // 🔐 Forbidden (Role issue)
+    // 🔐 Forbidden
     if (error.response?.status === 403) {
       console.error("Access denied: insufficient role permissions.");
     }
