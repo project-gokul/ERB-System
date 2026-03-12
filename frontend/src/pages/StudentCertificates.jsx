@@ -4,28 +4,18 @@ import "./StudentCertificates.css";
 
 /* ================= BACKEND URL CONFIG ================= */
 
-/*
-IMPORTANT:
-VITE_API_URL in Vercel MUST be:
-https://erb-backend-sg4x.onrender.com
-
-NOT:
-https://erb-backend-sg4x.onrender.com/api
-*/
-
 const RAW_API_URL =
   import.meta.env.VITE_API_URL ||
   "https://erb-backend-sg4x.onrender.com";
 
-// Remove trailing slash if exists
 const CLEAN_API_URL = RAW_API_URL.replace(/\/$/, "");
 
-// Backend base for static files
 const BACKEND_URL = CLEAN_API_URL;
 
 const PAGE_SIZE = 5;
 
 function StudentCertificates() {
+
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
   const [certificates, setCertificates] = useState([]);
@@ -44,91 +34,131 @@ function StudentCertificates() {
 
   const loadCertificates = async () => {
     try {
+
       setLoading(true);
+
       const res = await api.get("/certificates/my");
+
       setCertificates(res.data || []);
+
     } catch (err) {
+
       console.error("Load failed:", err);
+
       setCertificates([]);
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
   /* ================= UPLOAD ================= */
 
   const uploadCertificate = async (e) => {
+
     e.preventDefault();
 
-    if (!file) return alert("Select a file");
-    if (!title.trim()) return alert("Enter title");
+    if (!file) {
+      alert("Please select a file");
+      return;
+    }
+
+    if (!title.trim()) {
+      alert("Please enter a title");
+      return;
+    }
 
     try {
+
       const formData = new FormData();
+
       formData.append("title", title.trim());
       formData.append("certificate", file);
 
       setUploadProgress(0);
 
       await api.post("/certificates/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+
         onUploadProgress: (progressEvent) => {
+
           if (!progressEvent.total) return;
+
           const percent = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
+
           setUploadProgress(percent);
-        },
+
+        }
+
       });
 
       setTitle("");
       setFile(null);
+
       setUploadProgress(100);
 
       setTimeout(() => setUploadProgress(0), 1000);
 
       await loadCertificates();
+
       setPage(1);
+
     } catch (err) {
+
       console.error("Upload failed:", err);
+
       alert("Upload failed");
+
       setUploadProgress(0);
+
     }
+
   };
 
   /* ================= DELETE ================= */
 
   const deleteCertificate = async (id) => {
+
     if (!window.confirm("Delete this certificate?")) return;
 
     try {
+
       await api.delete(`/certificates/${id}`);
-      setCertificates((prev) => prev.filter((c) => c._id !== id));
+
+      setCertificates((prev) =>
+        prev.filter((c) => c._id !== id)
+      );
+
     } catch (err) {
+
       console.error("Delete failed:", err);
+
     }
+
   };
 
   /* ================= HELPERS ================= */
 
   const isPDF = (url = "") => url.toLowerCase().endsWith(".pdf");
 
-  // 🔥 SAFE FILE URL BUILDER
   const buildFileUrl = (fileUrl) => {
+
     if (!fileUrl) return "";
 
-    // If already full URL (Cloudinary, S3, etc.)
     if (fileUrl.startsWith("http")) return fileUrl;
 
-    // Ensure leading slash
     if (!fileUrl.startsWith("/")) {
       fileUrl = "/" + fileUrl;
     }
 
     return `${BACKEND_URL}${fileUrl}`;
+
   };
 
-  /* ================= SEARCH & PAGINATION ================= */
+  /* ================= SEARCH ================= */
 
   const filtered = certificates.filter((c) =>
     c.title?.toLowerCase().includes(search.toLowerCase())
@@ -144,10 +174,13 @@ function StudentCertificates() {
   /* ================= UI ================= */
 
   return (
+
     <div className="cert-container">
+
       <h2>Upload Certificate</h2>
 
       <form onSubmit={uploadCertificate} className="upload-form">
+
         <label
           className={`drop-zone ${dragActive ? "active" : ""}`}
           onDragOver={(e) => {
@@ -156,12 +189,18 @@ function StudentCertificates() {
           }}
           onDragLeave={() => setDragActive(false)}
           onDrop={(e) => {
+
             e.preventDefault();
+
             setDragActive(false);
+
             const droppedFile = e.dataTransfer.files[0];
+
             if (droppedFile) setFile(droppedFile);
+
           }}
         >
+
           <input
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
@@ -173,10 +212,12 @@ function StudentCertificates() {
             <span className="file-name">📄 {file.name}</span>
           ) : (
             <span>
-              Drag & Drop certificate here <br />
+              Drag & Drop certificate here
+              <br />
               <small>or Click to browse</small>
             </span>
           )}
+
         </label>
 
         <input
@@ -187,18 +228,27 @@ function StudentCertificates() {
           required
         />
 
-        <button type="submit">Upload</button>
+        <button type="submit">
+          Upload
+        </button>
+
       </form>
 
       {uploadProgress > 0 && (
+
         <div className="progress-bar">
+
           <div
             className="progress-fill"
             style={{ width: `${uploadProgress}%` }}
           >
+
             {uploadProgress}%
+
           </div>
+
         </div>
+
       )}
 
       <h3>My Certificates</h3>
@@ -208,25 +258,42 @@ function StudentCertificates() {
         placeholder="Search certificates..."
         value={search}
         onChange={(e) => {
+
           setSearch(e.target.value);
+
           setPage(1);
+
         }}
       />
 
-      {loading && <p className="empty">Loading certificates...</p>}
+      {loading && (
+        <p className="empty">
+          Loading certificates...
+        </p>
+      )}
 
       {!loading && paginated.length === 0 && (
-        <p className="empty">No certificates found</p>
+        <p className="empty">
+          No certificates found
+        </p>
       )}
 
       <div className="cert-list">
+
         {paginated.map((c) => (
+
           <div key={c._id} className="cert-card fade-slide">
+
             <div className="cert-info">
+
               <span className="icon">
                 {isPDF(c.fileUrl) ? "📄" : "🖼️"}
               </span>
-              <span className="title">{c.title}</span>
+
+              <span className="title">
+                {c.title}
+              </span>
+
             </div>
 
             <span className={`status ${c.status || "pending"}`}>
@@ -234,62 +301,106 @@ function StudentCertificates() {
             </span>
 
             <div className="actions">
-              <button onClick={() => setPreview(c)}>Preview</button>
+
+              <button onClick={() => setPreview(c)}>
+                Preview
+              </button>
+
               <button
                 className="delete"
                 onClick={() => deleteCertificate(c._id)}
               >
                 Delete
               </button>
+
             </div>
+
           </div>
+
         ))}
+
       </div>
 
       {totalPages > 1 && (
+
         <div className="pagination">
-          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+          >
             Prev
           </button>
+
           <span>
             {page} / {totalPages}
           </span>
+
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
           >
             Next
           </button>
+
         </div>
+
       )}
 
       {/* ================= PREVIEW MODAL ================= */}
+
       {preview && (
-        <div className="modal-overlay" onClick={() => setPreview(null)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+
+        <div
+          className="modal-overlay"
+          onClick={() => setPreview(null)}
+        >
+
+          <div
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+
             <h4>{preview.title}</h4>
 
             {isPDF(preview.fileUrl) ? (
+
               <iframe
                 src={buildFileUrl(preview.fileUrl)}
                 title="PDF Preview"
                 width="100%"
                 height="500px"
               />
+
             ) : (
+
               <img
                 src={buildFileUrl(preview.fileUrl)}
                 alt="Certificate"
-                style={{ width: "100%", borderRadius: "8px" }}
+                style={{
+                  width: "100%",
+                  borderRadius: "8px",
+                }}
               />
+
             )}
 
-            <button onClick={() => setPreview(null)}>Close</button>
+            <button
+              onClick={() => setPreview(null)}
+            >
+              Close
+            </button>
+
           </div>
+
         </div>
+
       )}
+
     </div>
+
   );
+
 }
 
 export default StudentCertificates;

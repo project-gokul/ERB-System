@@ -24,7 +24,9 @@ const allowFacultyOrAdmin = (role) => {
 ========================================================= */
 
 router.post("/upload", authMiddleware, (req, res) => {
-  upload.single("file")(req, res, async function (err) {
+
+  // ✅ FIXED FIELD NAME
+  upload.single("certificate")(req, res, async function (err) {
 
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ message: err.message });
@@ -39,8 +41,13 @@ router.post("/upload", authMiddleware, (req, res) => {
     }
 
     try {
+
       const userId = req.user.id;
       const { title } = req.body;
+
+      if (!title) {
+        return res.status(400).json({ message: "Title is required" });
+      }
 
       const fileUrl = `${process.env.BASE_URL}/uploads/certificates/${req.file.filename}`;
 
@@ -51,7 +58,8 @@ router.post("/upload", authMiddleware, (req, res) => {
         status: "pending",
       });
 
-      // Create notifications (role-based)
+      /* ================= CREATE NOTIFICATIONS ================= */
+
       const roles = ["faculty", "hod", "admin"];
 
       const notifications = roles.map((role) => ({
@@ -76,6 +84,7 @@ router.post("/upload", authMiddleware, (req, res) => {
     }
 
   });
+
 });
 
 /* =========================================================
@@ -84,6 +93,7 @@ router.post("/upload", authMiddleware, (req, res) => {
 
 router.get("/my", authMiddleware, async (req, res) => {
   try {
+
     const userId = req.user.id;
 
     const certificates = await Certificate.find({
@@ -103,7 +113,9 @@ router.get("/my", authMiddleware, async (req, res) => {
 ========================================================= */
 
 router.delete("/:id", authMiddleware, async (req, res) => {
+
   try {
+
     const userId = req.user.id;
 
     const cert = await Certificate.findOne({
@@ -116,7 +128,13 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     }
 
     const relativePath = cert.fileUrl.split("/uploads/")[1];
-    const absolutePath = path.join(__dirname, "..", "uploads", relativePath);
+
+    const absolutePath = path.join(
+      __dirname,
+      "..",
+      "uploads",
+      relativePath
+    );
 
     if (fs.existsSync(absolutePath)) {
       fs.unlinkSync(absolutePath);
@@ -127,9 +145,15 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     return res.json({ message: "Certificate deleted successfully" });
 
   } catch (err) {
+
     console.error("DELETE ERROR:", err);
-    return res.status(500).json({ error: "Failed to delete certificate" });
+
+    return res.status(500).json({
+      error: "Failed to delete certificate",
+    });
+
   }
+
 });
 
 /* =========================================================
@@ -137,7 +161,9 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 ========================================================= */
 
 router.get("/admin/all", authMiddleware, async (req, res) => {
+
   try {
+
     if (!allowFacultyOrAdmin(req.user.role)) {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -151,9 +177,15 @@ router.get("/admin/all", authMiddleware, async (req, res) => {
     return res.status(200).json(certificates);
 
   } catch (err) {
+
     console.error("ADMIN FETCH ERROR:", err);
-    return res.status(500).json({ error: "Failed to fetch certificates" });
+
+    return res.status(500).json({
+      error: "Failed to fetch certificates",
+    });
+
   }
+
 });
 
 /* =========================================================
@@ -161,7 +193,9 @@ router.get("/admin/all", authMiddleware, async (req, res) => {
 ========================================================= */
 
 router.patch("/admin/:id/status", authMiddleware, async (req, res) => {
+
   try {
+
     if (!allowFacultyOrAdmin(req.user.role)) {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -188,9 +222,15 @@ router.patch("/admin/:id/status", authMiddleware, async (req, res) => {
     });
 
   } catch (err) {
+
     console.error("STATUS UPDATE ERROR:", err);
-    return res.status(500).json({ error: "Failed to update status" });
+
+    return res.status(500).json({
+      error: "Failed to update status",
+    });
+
   }
+
 });
 
 module.exports = router;
