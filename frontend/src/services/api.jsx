@@ -9,7 +9,7 @@ import axios from "axios";
 
 const BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "https://erb-backend-sg4x.onrender.com";
+  "https://erb-system-drze.vercel.app";
 
 if (!BASE_URL) {
   console.error("VITE_API_URL is missing!");
