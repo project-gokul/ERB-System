@@ -9,7 +9,7 @@ import axios from "axios";
 
 const BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "https://erb-system-drze.vercel.app";
+  "http://localhost:5000";
 
 if (!BASE_URL) {
   console.error("VITE_API_URL is missing!");
