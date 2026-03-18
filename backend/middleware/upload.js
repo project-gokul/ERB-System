@@ -1,90 +1,46 @@
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
+// middleware/upload.js
 
-/* =========================================================
-   ================= CREATE UPLOAD FOLDER ==================
-========================================================= */
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 const uploadDir = path.join(__dirname, "..", "uploads", "certificates");
 
-try {
-
-  if (!fs.existsSync(uploadDir)) {
-
-    fs.mkdirSync(uploadDir, { recursive: true });
-
-    console.log("Upload folder created:", uploadDir);
-
-  } else {
-
-    console.log("Upload folder exists:", uploadDir);
-
-  }
-
-} catch (err) {
-
-  console.error("Upload folder error:", err);
-
+// ✅ Ensure folder exists
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-/* =========================================================
-   ================= MULTER STORAGE ========================
-========================================================= */
-
+// ✅ Storage config
 const storage = multer.diskStorage({
-
   destination: (req, file, cb) => {
-
     cb(null, uploadDir);
-
   },
-
   filename: (req, file, cb) => {
-
     const uniqueName =
       Date.now() + "-" + file.originalname.replace(/\s+/g, "_");
-
     cb(null, uniqueName);
-
   },
-
 });
 
-/* =========================================================
-   ================= FILE FILTER ===========================
-========================================================= */
-
+// ✅ File filter with proper error handling
 const fileFilter = (req, file, cb) => {
+  const allowedTypes = ["application/pdf", "image/jpeg", "image/png"];
 
-  if (file.mimetype === "application/pdf") {
-
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
-
   } else {
-
-    cb(new Error("Only PDF files allowed"));
-
+    cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "Invalid file type"));
   }
-
 };
 
-/* =========================================================
-   ================= MULTER CONFIG =========================
-========================================================= */
-
+// ✅ Multer instance
 const upload = multer({
-
   storage,
-
   fileFilter,
-
   limits: {
-
-    fileSize: 10 * 1024 * 1024, // 10MB
-
+    fileSize: 5 * 1024 * 1024, // 5MB
   },
-
 });
 
 module.exports = upload;
