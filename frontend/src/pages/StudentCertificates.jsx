@@ -57,7 +57,6 @@ function StudentCertificates() {
   /* ================= UPLOAD ================= */
 
   const uploadCertificate = async (e) => {
-
     e.preventDefault();
 
     if (!file) {
@@ -71,51 +70,43 @@ function StudentCertificates() {
     }
 
     try {
-
-      const formData = new FormData();
-
-      formData.append("title", title.trim());
-      formData.append("certificate", file);
-
       setUploadProgress(0);
 
-      await api.post("/certificates/upload", formData, {
+      // 1. Upload to ImgBB
+      const imgData = new FormData();
+      imgData.append("image", file);
+      
+      const imgbbRes = await fetch("https://api.imgbb.com/1/upload?key=9409425c59c7c3f7012d0edec5d95b41", {
+        method: "POST",
+        body: imgData,
+      });
+      const imgbbData = await imgbbRes.json();
+      
+      if (!imgbbRes.ok || !imgbbData.success) {
+        throw new Error(imgbbData?.error?.message || "Failed to upload to ImgBB");
+      }
 
-        onUploadProgress: (progressEvent) => {
+      setUploadProgress(50); // Halfway visual indicator
 
-          if (!progressEvent.total) return;
-
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-
-          setUploadProgress(percent);
-
-        }
-
+      // 2. Save certificate data to backend
+      await api.post("/certificates/upload", {
+        title: title.trim(),
+        fileUrl: imgbbData.data.url
       });
 
       setTitle("");
       setFile(null);
-
       setUploadProgress(100);
-
       setTimeout(() => setUploadProgress(0), 1000);
-
+      
       await loadCertificates();
-
       setPage(1);
 
     } catch (err) {
-
       console.error("Upload failed:", err);
-
-      alert("Upload failed");
-
+      alert(err.message || "Upload failed");
       setUploadProgress(0);
-
     }
-
   };
 
   /* ================= DELETE ================= */
@@ -203,7 +194,7 @@ function StudentCertificates() {
 
           <input
             type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept="image/*"
             hidden
             onChange={(e) => setFile(e.target.files[0])}
           />

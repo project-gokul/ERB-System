@@ -1,9 +1,5 @@
 const Certificate = require("../models/Certificate");
-const Notification = require("../models/Notification");
-const fs = require("fs");
-const path = require("path");
-
-const allowFacultyOrAdmin = (role) => {
+const Notification = require("../models/Notification");const allowFacultyOrAdmin = (role) => {
   if (!role) return false;
   const normalizedRole = role.toLowerCase();
   return ["faculty", "hod", "admin"].includes(normalizedRole);
@@ -11,19 +7,16 @@ const allowFacultyOrAdmin = (role) => {
 
 const uploadCertificate = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
     const userId = req.user.id;
-    const { title } = req.body;
+    const { title, fileUrl } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: "Title is required" });
     }
 
-    // safer file URL
-    const fileUrl = `/uploads/certificates/${req.file.filename}`;
+    if (!fileUrl) {
+      return res.status(400).json({ message: "File URL is required" });
+    }
 
     const certificate = await Certificate.create({
       studentId: userId,
@@ -83,20 +76,8 @@ const deleteCertificate = async (req, res) => {
       return res.status(404).json({ message: "Certificate not found" });
     }
 
-    const relativePath = cert.fileUrl.split("/uploads/")[1];
-
-    if (relativePath) {
-      const absolutePath = path.join(
-        __dirname,
-        "..",
-        "uploads",
-        relativePath
-      );
-
-      if (fs.existsSync(absolutePath)) {
-        fs.unlinkSync(absolutePath);
-      }
-    }
+    // Notice: We don't delete the remote ImgBB file here automatically since it doesn't provide a straightforward delete-by-url API without a separate delete URL/token.
+    // If we wanted to, we would need to store the ImgBB delete_url when creating the certificate.
 
     await cert.deleteOne();
 

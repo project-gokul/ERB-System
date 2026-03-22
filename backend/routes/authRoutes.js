@@ -22,4 +22,10 @@ router.get("/faculty-dashboard", authMiddleware, authController.facultyDashboard
 router.get("/student-dashboard", authMiddleware, authController.studentDashboard);
 router.get("/dashboard", authMiddleware, authController.genericDashboard);
 
+/* =====================================================
+   FORGOT / RESET PASSWORD
+===================================================== */
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password/:token", authController.resetPassword);
+
 module.exports = router;

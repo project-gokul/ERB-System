@@ -6,8 +6,8 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // TLS
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // MUST be Gmail App Password
+    user: "madhum072003@gmail.com",
+    pass: "rpkl undb tdgx pgdh", // Must be Gmail App Password
   },
 });
 
@@ -24,7 +24,7 @@ transporter.verify((error, success) => {
 const sendResetMail = async (to, resetLink) => {
   try {
     await transporter.sendMail({
-      from: `"ERB System" <${process.env.EMAIL_USER}>`,
+      from: '"ERB System" <madhum072003@gmail.com>',
       to,
       subject: "Reset Your Password",
       html: `
@@ -64,7 +64,7 @@ const sendResetMail = async (to, resetLink) => {
 const sendStatusMail = async (to, status) => {
   try {
     await transporter.sendMail({
-      from: `"ERB System" <${process.env.EMAIL_USER}>`,
+      from: '"ERB System" <madhum072003@gmail.com>',
       to,
       subject: "Certificate Status Update",
       html: `

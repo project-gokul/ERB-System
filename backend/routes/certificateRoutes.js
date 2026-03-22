@@ -1,5 +1,4 @@
 const express = require("express");
-const upload = require("../middleware/upload");
 const authMiddleware = require("../middleware/authMiddleware");
 const certificateController = require("../controllers/certificateController");
 
@@ -11,7 +10,6 @@ const router = express.Router();
 router.post(
   "/upload",
   authMiddleware,
-  upload.single("certificate"),
   certificateController.uploadCertificate
 );
 
