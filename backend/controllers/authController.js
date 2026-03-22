@@ -2,6 +2,8 @@ const User = require("../models/user");
 const Student = require("../models/Student");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { sendResetMail } = require("../utils/mailer");
 
 const register = async (req, res) => {
   try {
@@ -150,11 +152,74 @@ const genericDashboard = (req, res) => {
   });
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+    await user.save();
+
+    // The frontend typically runs on port 5173 or the origin host
+    const frontendUrl = req.headers.origin || "http://localhost:5173";
+    const resetLink = `${frontendUrl}/reset-password/${resetToken}`;
+
+    await sendResetMail(user.email, resetLink);
+
+    res.json({ message: "Password reset link sent to your email \u2705" });
+  } catch (error) {
+    console.error("FORGOT PASSWORD ERROR:", error);
+    res.status(500).json({ message: "Failed to send reset email \u274c" });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "New password is required" });
+    }
+
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired reset token" });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
+
+    res.json({ message: "Password reset successful \u2705" });
+  } catch (error) {
+    console.error("RESET PASSWORD ERROR:", error);
+    res.status(500).json({ message: "Failed to reset password \u274c" });
+  }
+};
+
 module.exports = {
   register,
   login,
   hodDashboard,
   facultyDashboard,
   studentDashboard,
-  genericDashboard
+  genericDashboard,
+  forgotPassword,
+  resetPassword,
 };
